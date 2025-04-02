@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useCallback } from 'react'; // Added useCallback import
+import { useRef, useEffect, useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 
 // Replace with your Mapbox access token
@@ -36,6 +36,7 @@ const Map: React.FC<MapProps> = ({ viewState, setViewState, cities }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Record<string, mapboxgl.Marker>>({});
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   // Get color based on AQI value
   const getAqiColor = (aqi: number): string => {
@@ -50,16 +51,29 @@ const Map: React.FC<MapProps> = ({ viewState, setViewState, cities }) => {
   // Create HTML for popup, memoized with useCallback
   const createPopupHTML = useCallback((city: { name: string; aqi: number }): string => {
     const color = getAqiColor(city.aqi);
+    const status = getAqiStatus(city.aqi);
+    
     return `
-      <div class="p-2">
-        <h3 class="font-bold">${city.name}</h3>
+      <div class="p-3 min-w-[180px]">
+        <h3 class="font-bold text-base mb-1">${city.name}</h3>
         <div class="flex items-center mt-1">
           <div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px;"></div>
-          <p>AQI: <span class="font-semibold">${city.aqi}</span></p>
+          <p class="font-medium">AQI: <span class="font-semibold">${city.aqi}</span></p>
         </div>
+        <p class="text-sm mt-1" style="color: ${color};">${status}</p>
       </div>
     `;
-  }, []); // Empty dependency array since it only depends on getAqiColor which is stable
+  }, []); 
+
+  // Get AQI status text
+  const getAqiStatus = (aqi: number): string => {
+    if (aqi <= 50) return "Good";
+    if (aqi <= 100) return "Moderate";
+    if (aqi <= 150) return "Unhealthy for Sensitive Groups";
+    if (aqi <= 200) return "Unhealthy";
+    if (aqi <= 300) return "Very Unhealthy";
+    return "Hazardous";
+  };
 
   const initialViewState = useRef({
     longitude: viewState.longitude,
@@ -67,58 +81,87 @@ const Map: React.FC<MapProps> = ({ viewState, setViewState, cities }) => {
     zoom: viewState.zoom
   });
 
-
-useEffect(() => {
-  if (map.current) return; // initialize map only once
-  
-  map.current = new mapboxgl.Map({
-    container: mapContainer.current!,
-    style: 'mapbox://styles/mapbox/streets-v11',
-    center: [initialViewState.current.longitude, initialViewState.current.latitude],
-    zoom: initialViewState.current.zoom
-  });
-  
-  map.current.on('move', () => {
-    const center = map.current!.getCenter();
-    setViewState({
-      longitude: center.lng,
-      latitude: center.lat,
-      zoom: map.current!.getZoom()
+  useEffect(() => {
+    if (map.current) return; // initialize map only once
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [initialViewState.current.longitude, initialViewState.current.latitude],
+      zoom: initialViewState.current.zoom
     });
-  });
+    
+    map.current.on('load', () => {
+      setIsMapLoaded(true);
+    });
+    
+    map.current.on('move', () => {
+      const center = map.current!.getCenter();
+      setViewState({
+        longitude: center.lng,
+        latitude: center.lat,
+        zoom: map.current!.getZoom()
+      });
+    });
 
-  return () => {
-    map.current?.remove();
-  };
-}, [setViewState]);
+    // Add navigation controls
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    
+    // Add fullscreen control
+    map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+    return () => {
+      map.current?.remove();
+    };
+  }, [setViewState]);
 
   // Update markers
   useEffect(() => {
-    if (!map.current || !map.current.loaded()) return;
+    if (!map.current || !isMapLoaded) return;
 
     cities.forEach(city => {
       if (!markers.current[city.id]) {
-        const marker = new mapboxgl.Marker({
-          color: getAqiColor(city.aqi)
-        })
+        // Create a DOM element for the marker
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.backgroundColor = getAqiColor(city.aqi);
+        el.style.width = '24px';
+        el.style.height = '24px';
+        el.style.borderRadius = '50%';
+        el.style.border = '2px solid white';
+        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+        el.style.cursor = 'pointer';
+        
+        const marker = new mapboxgl.Marker(el)
           .setLngLat([city.lng, city.lat])
-          .setPopup(new mapboxgl.Popup().setHTML(createPopupHTML(city)))
+          .setPopup(new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 25,
+            className: 'custom-popup'
+          }).setHTML(createPopupHTML(city)))
           .addTo(map.current!);
         
         markers.current[city.id] = marker;
       } else {
+        // Update existing marker
         const markerEl = markers.current[city.id].getElement();
         markerEl.style.backgroundColor = getAqiColor(city.aqi);
         markers.current[city.id].setPopup(
-          new mapboxgl.Popup().setHTML(createPopupHTML(city))
+          new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 25,
+            className: 'custom-popup'
+          }).setHTML(createPopupHTML(city))
         );
       }
     });
-  }, [cities, createPopupHTML]);
+  }, [cities, createPopupHTML, isMapLoaded]);
 
   // Update map position when viewState changes
   useEffect(() => {
-    if (!map.current || !map.current.loaded()) return;
+    if (!map.current || !isMapLoaded) return;
 
     map.current.flyTo({
       center: [viewState.longitude, viewState.latitude],
@@ -126,11 +169,11 @@ useEffect(() => {
       essential: true,
       duration: 1000
     });
-  }, [viewState.longitude, viewState.latitude, viewState.zoom]);
+  }, [viewState.longitude, viewState.latitude, viewState.zoom, isMapLoaded]);
 
   return (
     <div className="h-full relative animate-scaleIn">
-      <div ref={mapContainer} className="h-full rounded-lg" />
+      <div ref={mapContainer} className="h-full rounded-lg shadow-lg" />
       
       {/* Map overlay - Legend */}
       <div className="absolute top-4 left-4 bg-white bg-opacity-90 p-3 rounded-lg shadow-md text-sm max-w-[280px] z-10">
@@ -162,7 +205,6 @@ useEffect(() => {
           </div>
         </div>
       </div>
-    
     </div>
   );
 };
