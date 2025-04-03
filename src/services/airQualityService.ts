@@ -1,53 +1,10 @@
 // src/services/airQualityService.ts
 
-// OpenWeather API returns components in this format
-interface AirQualityComponent {
-    co: number;
-    no: number;
-    no2: number;
-    o3: number;
-    so2: number;
-    pm2_5: number;
-    pm10: number;
-    nh3: number;
-  }
-  
-  // Single point of air quality data
-  interface AirQualityPoint {
-    dt?: number;
-    main: {
-      aqi: number;
-    };
-    components: AirQualityComponent;
-  }
-  
-  // Historical data point structure
-  interface HistoricalDataPoint {
-    date: string;
-    air_quality: number;
-    co_surface: number;
-    pm10: number;
-    pm25: number;
-    so2_surface?: number;
-    no2_surface?: number;
-    o3_surface?: number;
-    nh3_surface?: number;
-  }
-  
-  // Complete air quality data structure
-  interface AirQualityData {
-    lat: number;
-    lon: number;
-    elevation?: number;
-    timezone?: string;
-    current: AirQualityPoint;
-    data: HistoricalDataPoint[];
-  }
-  
-  /**
-   * Fetches air quality data from the API
-   */
-  export const getAirQualityData = async (lat: number, lon: number): Promise<AirQualityData> => {
+/**
+ * Fetches air quality data from the OpenWeather API
+ * This function only returns real data without any fallbacks
+ */
+export const getAirQualityData = async (lat: number, lon: number): Promise<any> => {
     try {
       console.log('Sending request to API endpoint...');
       const response = await fetch(`/api/air-quality?lat=${lat}&lon=${lon}`);
@@ -71,21 +28,10 @@ interface AirQualityComponent {
       
       // Parse response
       const data = await response.json();
-      console.log('Data received from API', typeof data, data ? Object.keys(data) : 'null');
       
       // Validate data
       if (!data) {
         throw new Error('Empty response from API');
-      }
-      
-      // Additional validation and data structure checks
-      if (!data.current || !data.current.main || typeof data.current.main.aqi === 'undefined') {
-        console.warn('Current AQI data not available in expected format:', data);
-        
-        // If data exists but has invalid structure, try to fix it - the server should have returned fallback data
-        if (data.current && !data.current.main && data.current.icon) {
-          console.warn('Got weather data instead of air quality data, this should not happen with the updated API');
-        }
       }
       
       return data;
