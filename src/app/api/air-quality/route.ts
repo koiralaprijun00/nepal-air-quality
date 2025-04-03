@@ -30,6 +30,8 @@ export async function GET(request: Request) {
   
   try {
     console.log('Requesting from OpenWeather API - Current Data'); 
+
+    
     
     // Fetch current and historical data
     const [currentResponse, historicalResponse] = await Promise.all([
@@ -44,6 +46,9 @@ export async function GET(request: Request) {
         next: { revalidate: 3600 }
       })
     ]);
+
+    console.log('Current Response Status:', currentResponse.status);
+    console.log('Historical Response Status:', historicalResponse.status);
 
     if (!currentResponse.ok || !historicalResponse.ok) {
       const failedResponse = !currentResponse.ok ? currentResponse : historicalResponse;
