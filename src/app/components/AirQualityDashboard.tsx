@@ -1,37 +1,31 @@
-// src/app/components/AirQualityDashboard.tsx
+
 'use client'
 
-import React from 'react';
-import { getAqiCategory, getAqiColor } from '../../services/airQualityService';
+import React, { useState } from 'react';
+import { getPollutantLevel } from '../../services/overallAqiUtils';
+
+interface CityAirQualityData {
+  name: string;
+  coordinates: {
+    lat: number;
+    lon: number;
+  };
+  sampleData: any[];
+}
 
 interface AirQualityDashboardProps {
-  airQualityData: any;
+  citiesData: CityAirQualityData[];
   loading: boolean;
   error: string | null;
 }
 
 const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({ 
-  airQualityData, 
+  citiesData, 
   loading, 
   error 
 }) => {
-  // Debug data structure to help identify issues
-  React.useEffect(() => {
-    if (airQualityData) {
-      console.log('Air Quality Data Structure in Component:', {
-        hasCurrentData: !!airQualityData.current,
-        currentType: typeof airQualityData.current,
-        currentKeys: airQualityData.current ? Object.keys(airQualityData.current) : [],
-        hasMainProperty: !!(airQualityData.current && airQualityData.current.main),
-        hasAqiProperty: !!(airQualityData.current && airQualityData.current.main && 
-                         airQualityData.current.main.aqi),
-        hasComponents: !!(airQualityData.current && airQualityData.current.components),
-        dataArrayLength: airQualityData.data?.length
-      });
-    }
-  }, [airQualityData]);
+  const [search, setSearch] = useState('');
 
-  // Handle loading state
   if (loading) {
     return (
       <div className="text-center py-6 bg-white rounded-lg shadow">
@@ -41,94 +35,72 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
     );
   }
 
-  // Handle error state
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
         <p className="font-medium">Error Loading Data</p>
         <p className="text-sm">{error}</p>
-        <p className="text-sm mt-2">Please check your API configuration and try again.</p>
       </div>
     );
   }
 
-  // Handle missing data
-  if (!airQualityData || !airQualityData.current) {
+  if (!citiesData || citiesData.length === 0) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md">
-        <p className="font-medium">No Data Available</p>
-        <p className="text-sm">We couldn't retrieve air quality data. This might be due to API rate limits or configuration issues.</p>
+        <p className="font-medium">No Air Quality Data Available</p>
       </div>
     );
   }
-
-  // Extract current AQI information safely with fallbacks
-  const currentAqi = airQualityData.current.main?.aqi ?? null;
-  
-  // Handle components safely - OpenWeather returns them directly in the current object
-  const currentComponents = airQualityData.current.components || {};
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex flex-col md:flex-row items-center justify-between">
-        <div className="flex items-center mb-4 md:mb-0">
-          {currentAqi !== null ? (
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mr-4"
-              style={{ backgroundColor: getAqiColor(currentAqi) }}
-            >
-              {currentAqi}
-            </div>
-          ) : (
-            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 text-2xl font-bold mr-4">
-              ?
-            </div>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold">Current Air Quality</h2>
-            <p className="text-lg font-medium text-gray-700">Kathmandu, Nepal</p>
-            {currentAqi !== null ? (
-              <p className="text-xl font-semibold" style={{ color: getAqiColor(currentAqi) }}>
-                {getAqiCategory(currentAqi)}
-              </p>
-            ) : (
-              <p className="text-xl font-semibold text-gray-500">Data unavailable</p>
-            )}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div className="text-center bg-gray-50 p-3 rounded-lg">
-            <p className="text-gray-500 text-sm">PM2.5</p>
-            <p className="font-bold text-lg">{(currentComponents.pm2_5 || 0).toFixed(1)}</p>
-            <p className="text-xs text-gray-400">μg/m³</p>
-          </div>
-          <div className="text-center bg-gray-50 p-3 rounded-lg">
-            <p className="text-gray-500 text-sm">PM10</p>
-            <p className="font-bold text-lg">{(currentComponents.pm10 || 0).toFixed(1)}</p>
-            <p className="text-xs text-gray-400">μg/m³</p>
-          </div>
-          <div className="text-center bg-gray-50 p-3 rounded-lg">
-            <p className="text-gray-500 text-sm">O₃</p>
-            <p className="font-bold text-lg">{(currentComponents.o3 || 0).toFixed(1)}</p>
-            <p className="text-xs text-gray-400">μg/m³</p>
-          </div>
-          <div className="text-center bg-gray-50 p-3 rounded-lg">
-            <p className="text-gray-500 text-sm">NO₂</p>
-            <p className="font-bold text-lg">{(currentComponents.no2 || 0).toFixed(1)}</p>
-            <p className="text-xs text-gray-400">μg/m³</p>
-          </div>
-          <div className="text-center bg-gray-50 p-3 rounded-lg">
-            <p className="text-gray-500 text-sm">SO₂</p>
-            <p className="font-bold text-lg">{(currentComponents.so2 || 0).toFixed(1)}</p>
-            <p className="text-xs text-gray-400">μg/m³</p>
-          </div>
-          <div className="text-center bg-gray-50 p-3 rounded-lg">
-            <p className="text-gray-500 text-sm">CO</p>
-            <p className="font-bold text-lg">{(currentComponents.co || 0).toFixed(1)}</p>
-            <p className="text-xs text-gray-400">μg/m³</p>
-          </div>
-        </div>
+      <h2 className="text-2xl font-bold mb-6">Air Quality in Cities</h2>
+
+      <input
+        type="text"
+        placeholder="Search city..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-4 w-full p-2 border rounded"
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {citiesData
+          .filter(city => city.name.toLowerCase().includes(search.toLowerCase()))
+          .map((city, index) => {
+            const sample = city.sampleData?.[0];
+            const components = sample?.components || {};
+
+            return (
+              <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-semibold mb-2">{city.name}</h3>
+
+                <div className="text-sm text-gray-600 mb-1">
+                  <p><strong>Lat:</strong> {city.coordinates.lat.toFixed(4)}°</p>
+                  <p><strong>Lon:</strong> {city.coordinates.lon.toFixed(4)}°</p>
+                </div>
+
+                {sample && (
+                  <>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Date: {new Date(sample.dt * 1000).toLocaleString()}
+                    </p>
+
+                    <div className="mt-3 text-sm space-y-1">
+                      {Object.entries(components).map(([key, value]) => {
+                        const { label, range } = getPollutantLevel(key, value as number);
+                        return (
+                          <p key={key}>
+                            <strong>{key.toUpperCase()}</strong>: {value as number} – {label} ({range})
+                          </p>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
       </div>
     </div>
   );
