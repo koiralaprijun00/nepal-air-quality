@@ -15,15 +15,17 @@ interface AirQualityData {
     }>;
   }
   
-  // Get air quality data from our own API endpoint which proxies the Meteosource API
   export const getAirQualityData = async (lat: number, lon: number): Promise<AirQualityData> => {
     try {
+      console.log('Sending request to API endpoint...');
       const response = await fetch(`/api/air-quality?lat=${lat}&lon=${lon}`);
+      
+      console.log('Response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          `API response error: ${response.statusText}. ${errorData.message || ''}`
+          `API response error: ${response.status} ${response.statusText}. ${errorData.message || ''}`
         );
       }
     

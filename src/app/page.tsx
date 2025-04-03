@@ -5,7 +5,7 @@ import { getAirQualityData } from '../services/airQualityService';
 import HistoricalData from './components/HistoricalData';
 import Map from './components/Map';
 
-// Demo cities data for Nepal
+// Demo cities data for Nepal (we'll keep this since it's just city coordinates)
 const DEMO_CITIES = [
   {
     id: '1',
@@ -41,50 +41,6 @@ const DEMO_CITIES = [
     lat: 26.4831,
     lng: 87.2834,
     aqi: 68
-  }
-];
-
-// Sample historical data in case API fails
-const SAMPLE_DATA = [
-  {
-    date: new Date().toISOString().split('T')[0],
-    air_quality: 75,
-    co_surface: 480,
-    pm10: 45,
-    pm25: 23,
-    so2_surface: 1.8
-  },
-  {
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    air_quality: 82,
-    co_surface: 510,
-    pm10: 48,
-    pm25: 26,
-    so2_surface: 2.1
-  },
-  {
-    date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
-    air_quality: 68,
-    co_surface: 450,
-    pm10: 42,
-    pm25: 20,
-    so2_surface: 1.5
-  },
-  {
-    date: new Date(Date.now() - 259200000).toISOString().split('T')[0],
-    air_quality: 72,
-    co_surface: 465,
-    pm10: 44,
-    pm25: 22,
-    so2_surface: 1.6
-  },
-  {
-    date: new Date(Date.now() - 345600000).toISOString().split('T')[0],
-    air_quality: 65,
-    co_surface: 430,
-    pm10: 40,
-    pm25: 19,
-    so2_surface: 1.4
   }
 ];
 
@@ -127,15 +83,7 @@ const Home = () => {
       } catch (err) {
         console.error("Error fetching air quality data", err);
         setError(err instanceof Error ? err.message : 'Failed to load air quality data');
-        
-        // Set fallback data
-        setAirQualityData({
-          lat: "27.70169",
-          lon: "85.3206",
-          elevation: 1337,
-          timezone: "Asia/Kathmandu",
-          data: SAMPLE_DATA
-        });
+        setAirQualityData(null);
       } finally {
         setLoading(false);
       }
@@ -161,7 +109,7 @@ const Home = () => {
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
             <p className="font-medium">Error Loading Data</p>
             <p className="text-sm">{error}</p>
-            <p className="text-sm mt-2">Showing demo data for visualization purposes.</p>
+            <p className="text-sm mt-2">Please check your API configuration and try again.</p>
           </div>
         )}
         
@@ -172,8 +120,13 @@ const Home = () => {
         
         {/* Air Quality Data */}
         <div className="mt-8">
-          {airQualityData && airQualityData.data && (
+          {airQualityData && airQualityData.data && airQualityData.data.length > 0 ? (
             <HistoricalData data={airQualityData.data} />
+          ) : !loading && (
+            <div className="p-4 bg-white shadow-md rounded-md text-center">
+              <p className="text-gray-600">No air quality data available.</p>
+              <p className="text-sm text-gray-500 mt-2">Please ensure your API configuration is correct.</p>
+            </div>
           )}
         </div>
         

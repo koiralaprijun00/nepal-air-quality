@@ -5,11 +5,14 @@ import React from 'react';
 interface HistoricalDataProps {
   data: {
     date: string;
-    air_quality: number;
-    co_surface: number;
-    pm10: number;
-    pm25: number;
-    so2_surface: number;
+  air_quality: number;
+  co_surface: number;
+  pm10: number;
+  pm25: number;
+  so2_surface: number;
+  aerosol_550?: number;
+  no2_surface?: number;
+  ozone_surface?: number;
   }[];
 }
 
