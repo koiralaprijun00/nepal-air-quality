@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import { getAqiCategory, getAqiColor } from '../../services/airQualityService';
 
 // Get Mapbox token from environment variable
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -31,26 +32,6 @@ const Map: React.FC<MapProps> = ({ viewState, setViewState, cities }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
-
-  // Generate color based on AQI value
-  const getAqiColor = (aqi: number): string => {
-    if (aqi <= 50) return '#10B981'; // Good - green
-    if (aqi <= 100) return '#FBBF24'; // Moderate - yellow
-    if (aqi <= 150) return '#F97316'; // Unhealthy for Sensitive Groups - orange
-    if (aqi <= 200) return '#EF4444'; // Unhealthy - red
-    if (aqi <= 300) return '#8B5CF6'; // Very Unhealthy - purple
-    return '#E11D48'; // Hazardous - rose
-  };
-
-  // Get AQI category label
-  const getAqiCategory = (aqi: number): string => {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
-  };
 
   // Initialize map
   useEffect(() => {
@@ -119,6 +100,15 @@ const Map: React.FC<MapProps> = ({ viewState, setViewState, cities }) => {
         el.style.border = '2px solid white';
         el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
         el.style.cursor = 'pointer';
+        
+        // Add AQI number to marker
+        el.style.display = 'flex';
+        el.style.justifyContent = 'center';
+        el.style.alignItems = 'center';
+        el.style.color = 'white';
+        el.style.fontWeight = 'bold';
+        el.style.fontSize = '12px';
+        el.textContent = city.aqi.toString();
 
         // Create popup content
         const popupContent = `
@@ -155,6 +145,22 @@ const Map: React.FC<MapProps> = ({ viewState, setViewState, cities }) => {
         </div>
       )}
       <div ref={mapContainer} className="h-full w-full" />
+      
+      {/* Legend */}
+      <div className="absolute bottom-4 right-4 bg-white p-3 rounded-md shadow-md z-10">
+        <h4 className="text-sm font-semibold mb-2">Air Quality Index</h4>
+        <div className="flex flex-col gap-1">
+          {[1, 2, 3, 4, 5].map(aqi => (
+            <div key={aqi} className="flex items-center">
+              <div 
+                className="w-4 h-4 rounded-full mr-2"
+                style={{ backgroundColor: getAqiColor(aqi) }}
+              ></div>
+              <span className="text-xs">{aqi} - {getAqiCategory(aqi)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
