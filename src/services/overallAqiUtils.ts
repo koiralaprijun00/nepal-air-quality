@@ -145,21 +145,6 @@ interface AqiBreakpoint {
     },
   };
   
-  
-  export const calculateAqi = (pollutant: string, concentration: number): number | null => {
-    const pollutantInfo = breakpointsMap[pollutant];
-    if (!pollutantInfo) return null;
-  
-    const adjustedValue = convertConcentration(pollutant, concentration);
-  
-    const bp = pollutantInfo.breakpoints.find(b => adjustedValue >= b.Clow && adjustedValue <= b.Chigh);
-    if (!bp) return null;
-  
-    const { Clow, Chigh, Ilow, Ihigh } = bp;
-    return Math.round(((Ihigh - Ilow) / (Chigh - Clow)) * (adjustedValue - Clow) + Ilow);
-  };
-  
-  
   export const getAqiCategoryColor = (aqi: number): { label: string; color: string } => {
     if (aqi <= 50) return { label: 'Good', color: 'bg-green-500 text-white' };
     if (aqi <= 100) return { label: 'Moderate', color: 'bg-yellow-400 text-black' };
@@ -168,36 +153,3 @@ interface AqiBreakpoint {
     if (aqi <= 300) return { label: 'Very Unhealthy', color: 'bg-purple-600 text-white' };
     return { label: 'Hazardous', color: 'bg-maroon-700 text-white' };
   };
-
-  export const calculateOverallAqi = (components: Record<string, number>): number | null => {
-    const pollutants = ['pm2_5', 'pm10', 'o3', 'no2', 'so2', 'co'];
-    const aqis = pollutants.map(p => calculateAqi(p, components[p])).filter(aqi => aqi !== null);
-    return aqis.length ? Math.max(...(aqis as number[])) : null;
-  };
-
-  export const convertConcentration = (pollutant: string, value: number): number => {
-    switch (pollutant) {
-      case 'o3': return (value * 24.45) / 48;
-      case 'no2': return (value * 24.45) / 46.01;
-      case 'so2': return (value * 24.45) / 64.07;
-      case 'co': return (value * 24.45) / (28.01 * 1000); // convert to ppm
-      default: return value; // pm2.5 & pm10 need no change
-    }
-  };
-  
-  export const getDominantPollutant = (components: Record<string, number>): string | null => {
-    const pollutants = ['pm2_5', 'pm10', 'o3', 'no2', 'so2', 'co'];
-  
-    const scores = pollutants
-      .map(p => ({
-        pollutant: p,
-        aqi: calculateAqi(p, components[p]),
-      }))
-      .filter(item => item.aqi !== null) as { pollutant: string; aqi: number }[];
-  
-    if (!scores.length) return null;
-  
-    const dominant = scores.reduce((prev, curr) => (curr.aqi > prev.aqi ? curr : prev));
-    return dominant.pollutant.toUpperCase();
-  };
-  
