@@ -5,6 +5,7 @@ import { getPollutantLevel } from '../../services/overallAqiUtils';
 import UsAqiCard from './UsAqiCard';
 import { AqiComparisonBox } from './AqiTrendsChart';
 import { getAqiCategory, calculateOverallAqi } from '../../services/AqiCalculator';
+import AirQualityMap from './AirQualityMap';
 
 interface CityAirQualityData {
   name: string;
@@ -27,7 +28,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
   error 
 }) => {
   const [search, setSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'card' | 'detailed'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'detailed' | 'map'>('card');
 
   if (loading) {
     return (
@@ -74,99 +75,103 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
             >
               Detailed View
             </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`px-3 py-1 rounded ${viewMode === 'map' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Map View
+            </button>
           </div>
           
-          <input
-            type="text"
-            placeholder="Search city..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="p-2 border rounded"
-          />
+          {viewMode !== 'map' && (
+            <input
+              type="text"
+              placeholder="Search city..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="p-2 border rounded"
+            />
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {citiesData
-          .filter(city => city.name.toLowerCase().includes(search.toLowerCase()))
-          .map((city, index) => {
-            const sample = city.sampleData?.[0];
-            const components = sample?.components || {};
+      {viewMode === 'map' ? (
+        <AirQualityMap citiesData={citiesData} loading={loading} error={error} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {citiesData
+            .filter(city => city.name.toLowerCase().includes(search.toLowerCase()))
+            .map((city, index) => {
+              const sample = city.sampleData?.[0];
+              const components = sample?.components || {};
 
-            return (
-              <div key={index} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                <div className="bg-gray-50 border-b px-4 py-3 flex justify-between items-center">
-                  <div>
-                    <h3 className="text-xl font-semibold">{city.name}</h3>
-                    <div className="text-sm text-gray-600">
-                      <span>Lat: {city.coordinates.lat.toFixed(4)}°</span>
-                      <span className="ml-2">Lon: {city.coordinates.lon.toFixed(4)}°</span>
+              return (
+                <div key={index} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="bg-gray-50 border-b px-4 py-3 flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xl font-semibold">{city.name}</h3>
+                      <div className="text-sm text-gray-600">
+                        <span>Lat: {city.coordinates.lat.toFixed(4)}°</span>
+                        <span className="ml-2">Lon: {city.coordinates.lon.toFixed(4)}°</span>
+                      </div>
                     </div>
+                    <a 
+                      href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
+                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+                    >
+                      Details
+                    </a>
                   </div>
-                  <a 
-                    href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
-                  >
-                    Details
-                  </a>
-                </div>
-                
-                {sample && (
-                  <div className="p-4">
-                    {viewMode === 'card' ? (
-                      <>
-                        <div className="mb-4">
-                          <AqiComparisonBox
-                            openWeatherAqi={sample.main?.aqi || 0}
-                            components={components}
-                          />
-                        </div>
-                        <UsAqiCard 
-                          pollutants={components} 
-                          timestamp={sample.dt}
-                        />
-                      </>
-                    ) : (
-                      <div>
-                        <p className="text-sm text-gray-600 mb-3">
-                          Date: {new Date(sample.dt * 1000).toLocaleString()}
-                        </p>
-                        
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <h4 className="font-medium text-gray-700 mb-1">OpenWeather AQI:</h4>
-                            <p className="text-2xl font-bold">{sample.main?.aqi || 'N/A'}</p>
+                  
+                  {sample && (
+                    <div className="p-4">
+                      {viewMode === 'card' ? (
+                        <>
+                          <div className="mb-4">
+                            <AqiComparisonBox
+                              components={components}
+                            />
                           </div>
+                          <UsAqiCard 
+                            pollutants={components} 
+                            timestamp={sample.dt}
+                          />
+                        </>
+                      ) : (
+                        <div>
+                          <p className="text-sm text-gray-600 mb-3">
+                            Date: {new Date(sample.dt * 1000).toLocaleString()}
+                          </p>
                           
-                          <div>
+                          <div className="mb-4">
                             <h4 className="font-medium text-gray-700 mb-1">US EPA AQI:</h4>
                             <p className="text-2xl font-bold">
                               {calculateOverallAqi(components).aqi}
                             </p>
                           </div>
+                          
+                          <div className="mt-3 text-sm space-y-1">
+                            {Object.entries(components).map(([key, value]) => {
+                              const { label, range } = getPollutantLevel(key, value as number);
+                              return (
+                                <p key={key} className="border-b pb-1">
+                                  <strong>{key.toUpperCase()}</strong>: {value as number} µg/m³
+                                  <span className="block text-xs">
+                                    {label} ({range})
+                                  </span>
+                                </p>
+                              );
+                            })}
+                          </div>
                         </div>
-                        
-                        <div className="mt-3 text-sm space-y-1">
-                          {Object.entries(components).map(([key, value]) => {
-                            const { label, range } = getPollutantLevel(key, value as number);
-                            return (
-                              <p key={key} className="border-b pb-1">
-                                <strong>{key.toUpperCase()}</strong>: {value as number} µg/m³
-                                <span className="block text-xs">
-                                  {label} ({range})
-                                </span>
-                              </p>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-      </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+      )}
     </div>
   );
 };

@@ -19,7 +19,6 @@ interface HistoricalDataPoint {
 
 interface ChartDataPoint {
   date: string;
-  openWeatherAqi: number;
   usEpaAqi: number;
   pm25: number;
   pm10: number;
@@ -58,36 +57,35 @@ const AqiTrendsChart: React.FC<AqiTrendsChartProps> = ({ lat, lon, cityName }) =
           return;
         }
         
-        // Transform data for the chart
-        const transformedData: ChartDataPoint[] = data.data.map((point: any) => {
-          // Calculate US EPA AQI
-          const components = {
-            pm2_5: point.pm25 || 0,
-            pm10: point.pm10 || 0,
-            o3: point.o3_surface || 0,
-            no2: point.no2_surface || 0,
-            so2: point.so2_surface || 0,
-            co: point.co_surface || 0
-          };
-          
-          const { aqi: usEpaAqi } = calculateOverallAqi(components);
-          
-          return {
-            date: new Date(point.date).toLocaleString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              hour: 'numeric' 
-            }),
-            openWeatherAqi: point.air_quality,
-            usEpaAqi,
-            pm25: point.pm25 || 0,
-            pm10: point.pm10 || 0,
-            o3: point.o3_surface || 0,
-            no2: point.no2_surface || 0,
-            so2: point.so2_surface || 0,
-            co: point.co_surface / 100 // Scaling CO for better visualization
-          };
-        });
+      // Modified data transformation in AqiTrendsChart
+const transformedData: ChartDataPoint[] = data.data.map((point: any) => {
+  // Calculate US EPA AQI
+  const components = {
+    pm2_5: point.pm25 || 0,
+    pm10: point.pm10 || 0,
+    o3: point.o3_surface || 0,
+    no2: point.no2_surface || 0,
+    so2: point.so2_surface || 0,
+    co: point.co_surface || 0
+  };
+  
+  const { aqi: usEpaAqi } = calculateOverallAqi(components);
+  
+  return {
+    date: new Date(point.date).toLocaleString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      hour: 'numeric' 
+    }),
+    usEpaAqi,
+    pm25: point.pm25 || 0,
+    pm10: point.pm10 || 0,
+    o3: point.o3_surface || 0,
+    no2: point.no2_surface || 0,
+    so2: point.so2_surface || 0,
+    co: point.co_surface / 100 // Scaling CO for better visualization
+  };
+});
         
         setChartData(transformedData);
       } catch (err) {
@@ -100,32 +98,30 @@ const AqiTrendsChart: React.FC<AqiTrendsChartProps> = ({ lat, lon, cityName }) =
     fetchHistoricalData();
   }, [lat, lon]);
   
-  // Define pollutant options for the chart
-  const pollutantOptions = [
-    { value: 'usEpaAqi', label: 'US EPA AQI' },
-    { value: 'openWeatherAqi', label: 'OpenWeather AQI' },
-    { value: 'pm25', label: 'PM2.5' },
-    { value: 'pm10', label: 'PM10' },
-    { value: 'o3', label: 'Ozone (O₃)' },
-    { value: 'no2', label: 'NO₂' },
-    { value: 'so2', label: 'SO₂' },
-    { value: 'co', label: 'CO (÷100)' }
-  ];
-  
-  // Get color for line based on pollutant
-  const getLineColor = (pollutant: string): string => {
-    switch (pollutant) {
-      case 'usEpaAqi': return '#8884d8';
-      case 'openWeatherAqi': return '#82ca9d';
-      case 'pm25': return '#ff7300';
-      case 'pm10': return '#ff0000';
-      case 'o3': return '#0088fe';
-      case 'no2': return '#00c49f';
-      case 'so2': return '#ffbb28';
-      case 'co': return '#ff8042';
-      default: return '#8884d8';
-    }
-  };
+ // Modified pollutant options in AqiTrendsChart
+const pollutantOptions = [
+  { value: 'usEpaAqi', label: 'US EPA AQI' },
+  { value: 'pm25', label: 'PM2.5' },
+  { value: 'pm10', label: 'PM10' },
+  { value: 'o3', label: 'Ozone (O₃)' },
+  { value: 'no2', label: 'NO₂' },
+  { value: 'so2', label: 'SO₂' },
+  { value: 'co', label: 'CO (÷100)' }
+];
+
+// Modified getLineColor function
+const getLineColor = (pollutant: string): string => {
+  switch (pollutant) {
+    case 'usEpaAqi': return '#8884d8';
+    case 'pm25': return '#ff7300';
+    case 'pm10': return '#ff0000';
+    case 'o3': return '#0088fe';
+    case 'no2': return '#00c49f';
+    case 'so2': return '#ffbb28';
+    case 'co': return '#ff8042';
+    default: return '#8884d8';
+  }
+};
   
   if (loading) {
     return (
@@ -261,25 +257,13 @@ const AqiTrendsChart: React.FC<AqiTrendsChartProps> = ({ lat, lon, cityName }) =
 
 export default AqiTrendsChart;
 
-// Add a small comparison component for showing both AQI systems
+
+// Modified AqiComparisonBox to remove OpenWeather AQI
 export const AqiComparisonBox: React.FC<{
-  openWeatherAqi: number;
   components: Record<string, number>;
-}> = ({ openWeatherAqi, components }) => {
+}> = ({ components }) => {
   const { aqi: usEpaAqi, dominantPollutant } = calculateOverallAqi(components);
   const epaCat = getAqiCategory(usEpaAqi);
-  
-  // Map OpenWeather AQI to category labels
-  const owCategoryLabel = (() => {
-    switch(openWeatherAqi) {
-      case 1: return { label: 'Good', color: 'bg-green-500' };
-      case 2: return { label: 'Fair', color: 'bg-green-300' };
-      case 3: return { label: 'Moderate', color: 'bg-yellow-400' };
-      case 4: return { label: 'Poor', color: 'bg-orange-500' };
-      case 5: return { label: 'Very Poor', color: 'bg-red-500' };
-      default: return { label: 'Unknown', color: 'bg-gray-400' };
-    }
-  })();
   
   // Map pollutant keys to human-readable names
   const pollutantNames: Record<string, string> = {
@@ -293,31 +277,20 @@ export const AqiComparisonBox: React.FC<{
   
   return (
     <div className="border rounded-lg overflow-hidden">
-      <div className="grid grid-cols-2 divide-x">
-        <div className="p-3">
-          <h3 className="text-sm font-medium text-gray-700 mb-1">OpenWeather AQI</h3>
-          <div className="flex items-center space-x-2">
-            <div className={`w-4 h-4 rounded-full ${owCategoryLabel.color}`}></div>
-            <div className="text-xl font-bold">{openWeatherAqi}</div>
-            <div className="text-sm">{owCategoryLabel.label}</div>
-          </div>
-        </div>
-        
-        <div className="p-3">
-          <h3 className="text-sm font-medium text-gray-700 mb-1">US EPA AQI</h3>
-          <div className="flex items-center space-x-2">
-            <div className={`w-4 h-4 rounded-full ${epaCat.color.split(' ')[0]}`}></div>
-            <div className="text-xl font-bold">{usEpaAqi}</div>
-            <div className="text-sm">{epaCat.label}</div>
-          </div>
-        </div>
+    <div className="p-3">
+      <h3 className="text-sm font-medium text-gray-700 mb-1">US EPA AQI</h3>
+      <div className="flex items-center space-x-2">
+        <div className={`w-4 h-4 rounded-full ${epaCat.color.split(' ')[0]}`}></div>
+        <div className="text-xl font-bold">{usEpaAqi}</div>
+        <div className="text-sm">{epaCat.label}</div>
       </div>
-      
-      {dominantPollutant && (
-        <div className="px-3 py-2 bg-gray-50 text-sm border-t">
-          <span className="font-medium">Main Pollutant:</span> {pollutantNames[dominantPollutant] || dominantPollutant}
-        </div>
-      )}
     </div>
+    
+    {dominantPollutant && (
+      <div className="px-3 py-2 bg-gray-50 text-sm border-t">
+        <span className="font-medium">Main Pollutant:</span> {pollutantNames[dominantPollutant] || dominantPollutant}
+      </div>
+    )}
+  </div>
   );
 };

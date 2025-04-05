@@ -93,122 +93,47 @@ const CityDetailsPage = () => {
   const components = sample?.components || {};
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <button 
-        onClick={() => router.push('/')} 
-        className="mb-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        &larr; Back to All Cities
-      </button>
-      
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 className="text-3xl font-bold mb-2">{cityData.name}</h1>
-        <div className="text-gray-600 mb-4">
-          <p>Latitude: {cityData.coordinates.lat.toFixed(4)}°</p>
-          <p>Longitude: {cityData.coordinates.lon.toFixed(4)}°</p>
-          {sample && (
-            <p>Last Updated: {new Date(sample.dt * 1000).toLocaleString()}</p>
-          )}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {sample && (
-            <>
-              <div>
-                <div className="mb-4">
-                  <AqiComparisonBox
-                    openWeatherAqi={sample.main?.aqi || 0}
-                    components={components}
-                  />
-                </div>
-                <UsAqiCard 
-                  pollutants={components} 
-                  timestamp={sample.dt}
-                />
-              </div>
-              
-              <div className="bg-white rounded-lg shadow p-4">
-                <h2 className="text-xl font-bold mb-4">Air Quality Details</h2>
-                
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium">OpenWeather AQI System</h3>
-                    <a href="https://openweathermap.org/api/air-pollution" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">
-                      Learn more
-                    </a>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded">
-                    <p className="text-2xl font-bold">
-                      {sample.main?.aqi || 'N/A'}
-                    </p>
-                    <p className="text-gray-600">
-                      {(() => {
-                        switch(sample.main?.aqi) {
-                          case 1: return 'Good';
-                          case 2: return 'Fair';
-                          case 3: return 'Moderate';
-                          case 4: return 'Poor';
-                          case 5: return 'Very Poor';
-                          default: return 'Unknown';
-                        }
-                      })()}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      AQI scale ranges from 1 (Good) to 5 (Very Poor)
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium">US EPA AQI System</h3>
-                    <a href="https://www.airnow.gov/aqi/aqi-basics/" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">
-                      Learn more
-                    </a>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded">
-                    {(() => {
-                      const { aqi, dominantPollutant } = calculateOverallAqi(components);
-                      const category = getAqiCategory(aqi);
-                      return (
-                        <>
-                          <p className="text-2xl font-bold">{aqi}</p>
-                          <p className="text-gray-600">{category.label}</p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            AQI scale ranges from 0 (Good) to 500+ (Hazardous)
-                          </p>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-                
-                <h3 className="font-medium mb-2">Pollutant Concentrations:</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {Object.entries(components).map(([key, value]) => {
-                    const { label, range } = getPollutantLevel(key, value as number);
-                    return (
-                      <div key={key} className="border-b pb-2">
-                        <div className="font-medium">{key.toUpperCase()}: {(value as number).toFixed(2)} µg/m³</div>
-                        <div className="text-sm text-gray-600">{label} ({range})</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <AqiTrendsChart 
-          lat={cityData.coordinates.lat} 
-          lon={cityData.coordinates.lon}
-          cityName={cityData.name}
-        />
-      </div>
+    // Modified Air Quality Details section in CityDetailsPage
+<div className="bg-white rounded-lg shadow p-4">
+  <h2 className="text-xl font-bold mb-4">Air Quality Details</h2>
+  
+  <div className="mb-6">
+    <div className="flex justify-between items-center mb-2">
+      <h3 className="font-medium">US EPA AQI System</h3>
+      <a href="https://www.airnow.gov/aqi/aqi-basics/" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">
+        Learn more
+      </a>
     </div>
+    <div className="bg-gray-50 p-3 rounded">
+      {(() => {
+        const { aqi, dominantPollutant } = calculateOverallAqi(components);
+        const category = getAqiCategory(aqi);
+        return (
+          <>
+            <p className="text-2xl font-bold">{aqi}</p>
+            <p className="text-gray-600">{category.label}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              AQI scale ranges from 0 (Good) to 500+ (Hazardous)
+            </p>
+          </>
+        );
+      })()}
+    </div>
+  </div>
+  
+  <h3 className="font-medium mb-2">Pollutant Concentrations:</h3>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    {Object.entries(components).map(([key, value]) => {
+      const { label, range } = getPollutantLevel(key, value as number);
+      return (
+        <div key={key} className="border-b pb-2">
+          <div className="font-medium">{key.toUpperCase()}: {(value as number).toFixed(2)} µg/m³</div>
+          <div className="text-sm text-gray-600">{label} ({range})</div>
+        </div>
+      );
+    })}
+  </div>
+</div>
   );
 };
 
