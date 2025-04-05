@@ -8,11 +8,7 @@ import AqiTrendsChart from '../../components/AqiTrendsChart';
 import { getPollutantLevel } from '../../../services/overallAqiUtils';
 import { calculateOverallAqi, getAqiCategory } from '../../../services/AqiCalculator';
 import { 
-  MapPinIcon, 
-  ChartBarIcon, 
-  ClockIcon,
   CloudIcon,
-  WindIcon
 } from '@heroicons/react/24/outline';
 
 interface CityData {
