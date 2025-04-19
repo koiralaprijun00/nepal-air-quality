@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import AirQualityDashboard from './components/AirQualityDashboard';
 import SearchBar from './components/SearchBar';
-import HeroMap from './components/HeroMap'; // Import the new HeroMap component
+import HeroMap from './components/HeroSection'; // Import the new HeroMap component
 
 const Home = () => {
   const router = useRouter();
