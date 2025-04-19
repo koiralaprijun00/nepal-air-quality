@@ -54,6 +54,29 @@ const cities = [
 
 export async function GET() {
   try {
+    // Check API usage first
+    const usageResponse = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?lat=27.7172&lon=85.3240&appid=${API_KEY}&units=metric`
+    );
+    
+    if (!usageResponse.ok) {
+      console.error('API Usage Check Failed:', {
+        status: usageResponse.status,
+        statusText: usageResponse.statusText
+      });
+    }
+
+    const usageHeaders = usageResponse.headers;
+    const callsMade = usageHeaders.get('x-ratelimit-usage');
+    const callsLimit = usageHeaders.get('x-ratelimit-limit');
+    const callsReset = usageHeaders.get('x-ratelimit-reset');
+    
+    console.log('API Usage:', {
+      callsMade,
+      callsLimit,
+      callsReset: new Date(Number(callsReset) * 1000).toLocaleString()
+    });
+
     const results = await Promise.all(
       cities.map(async city => {
         try {
@@ -61,13 +84,51 @@ export async function GET() {
           const airResponse = await fetch(
             `https://api.openweathermap.org/data/2.5/air_pollution?lat=${city.lat}&lon=${city.lon}&appid=${API_KEY}`
           );
-          const airData = await airResponse.json();
+          
+          if (!airResponse.ok) {
+            console.error(`Air Pollution API Error for ${city.name}:`, {
+              status: airResponse.status,
+              statusText: airResponse.statusText
+            });
+            return null;
+          }
 
-          // Fetch weather data
+          const airData = await airResponse.json();
+          
+          if (!airData.list || !airData.list[0]) {
+            console.error(`No air pollution data for ${city.name}`);
+            return null;
+          }
+
+          // Fetch current weather data
           const weatherResponse = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=${API_KEY}&units=metric`
           );
+          
+          if (!weatherResponse.ok) {
+            console.error(`Weather API Error for ${city.name}:`, {
+              status: weatherResponse.status,
+              statusText: weatherResponse.statusText
+            });
+            return null;
+          }
+
           const weatherData = await weatherResponse.json();
+
+          // Fetch 5-day/3-hour forecast
+          const forecastResponse = await fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${city.lat}&lon=${city.lon}&appid=${API_KEY}&units=metric`
+          );
+          
+          if (!forecastResponse.ok) {
+            console.error(`Forecast API Error for ${city.name}:`, {
+              status: forecastResponse.status,
+              statusText: forecastResponse.statusText
+            });
+            return null;
+          }
+
+          const forecastData = await forecastResponse.json();
 
           return {
             name: city.name,
@@ -87,7 +148,16 @@ export async function GET() {
                 description: weatherData.weather[0].description,
                 icon: weatherData.weather[0].icon
               }
-            }]
+            }],
+            hourlyForecast: forecastData.list.map((item: any) => ({
+              dt: item.dt,
+              temp: item.main.temp,
+              feels_like: item.main.feels_like,
+              humidity: item.main.humidity,
+              wind_speed: item.wind.speed,
+              description: item.weather[0].description,
+              icon: item.weather[0].icon
+            }))
           };
         } catch (error) {
           console.error(`Error fetching data for ${city.name}:`, error);
@@ -97,6 +167,12 @@ export async function GET() {
     );
 
     const validResults = results.filter(result => result !== null);
+    
+    if (validResults.length === 0) {
+      console.error('No valid results returned from any city');
+      return NextResponse.json({ error: 'No data available' }, { status: 404 });
+    }
+
     return NextResponse.json(validResults);
   } catch (error) {
     console.error('Error fetching data:', error);

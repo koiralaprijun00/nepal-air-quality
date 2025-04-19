@@ -48,26 +48,10 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'card' | 'detailed' | 'map'>('card');
-  const [filterAqi, setFilterAqi] = useState<string>('all');
 
-  // Filter cities based on search term and AQI filter
+  // Filter cities based on search term
   const filteredCities = citiesData
-    .filter(city => city.name.toLowerCase().includes(search.toLowerCase()))
-    .filter(city => {
-      if (filterAqi === 'all') return true;
-      
-      const sample = city.sampleData?.[0];
-      const components = sample?.components || {};
-      const { aqi } = calculateOverallAqi(components);
-      
-      switch(filterAqi) {
-        case 'good': return aqi <= 50;
-        case 'moderate': return aqi > 50 && aqi <= 100;
-        case 'unhealthy': return aqi > 100 && aqi <= 150;
-        case 'very-unhealthy': return aqi > 150;
-        default: return true;
-      }
-    });
+    .filter(city => city.name.toLowerCase().includes(search.toLowerCase()));
 
   if (loading) {
     return (
@@ -164,62 +148,6 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
             )}
           </div>
         </div>
-        
-        {/* AQI Filter Tabs */}
-        {viewMode !== 'map' && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            <button
-              onClick={() => setFilterAqi('all')}
-              className={`px-3 py-1.5 text-xs rounded-full ${
-                filterAqi === 'all' 
-                  ? 'bg-blue-100 text-blue-800' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              All Cities
-            </button>
-            <button
-              onClick={() => setFilterAqi('good')}
-              className={`px-3 py-1.5 text-xs rounded-full ${
-                filterAqi === 'good' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-green-50 text-green-700 hover:bg-green-100'
-              }`}
-            >
-              Good Air Quality
-            </button>
-            <button
-              onClick={() => setFilterAqi('moderate')}
-              className={`px-3 py-1.5 text-xs rounded-full ${
-                filterAqi === 'moderate' 
-                  ? 'bg-yellow-100 text-yellow-800' 
-                  : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
-              }`}
-            >
-              Moderate
-            </button>
-            <button
-              onClick={() => setFilterAqi('unhealthy')}
-              className={`px-3 py-1.5 text-xs rounded-full ${
-                filterAqi === 'unhealthy' 
-                  ? 'bg-orange-100 text-orange-800' 
-                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-              }`}
-            >
-              Unhealthy
-            </button>
-            <button
-              onClick={() => setFilterAqi('very-unhealthy')}
-              className={`px-3 py-1.5 text-xs rounded-full ${
-                filterAqi === 'very-unhealthy' 
-                  ? 'bg-red-100 text-red-800' 
-                  : 'bg-red-50 text-red-700 hover:bg-red-100'
-              }`}
-            >
-              Very Unhealthy
-            </button>
-          </div>
-        )}
       </div>
 
       {viewMode === 'map' ? (
@@ -293,22 +221,6 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                               <p className="text-xs text-gray-500">US EPA Air Quality Index</p>
                             </div>
                           </div>
-                          
-                          {/* Dominant Pollutant */}
-                          {dominantPollutant && (
-                            <div className="p-3 bg-white/90 rounded-lg shadow-sm">
-                              <p className="text-xs text-gray-500 mb-1">Main Pollutant</p>
-                              <p className="font-medium text-gray-800">
-                                {dominantPollutant === 'pm2_5' ? 'PM2.5' : 
-                                dominantPollutant === 'pm10' ? 'PM10' : 
-                                dominantPollutant === 'o3' ? 'Ozone (O₃)' : 
-                                dominantPollutant === 'no2' ? 'NO₂' : 
-                                dominantPollutant === 'so2' ? 'SO₂' : 
-                                dominantPollutant === 'co' ? 'CO' : 
-                                dominantPollutant}
-                              </p>
-                            </div>
-                          )}
                         </div>
                       ) : (
                         <div>

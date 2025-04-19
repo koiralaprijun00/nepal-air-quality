@@ -433,7 +433,7 @@ const Home = () => {
       <div className="w-full relative h-[600px] mb-8">
         {/* City Data Overlay */}
         {cityData && (
-          <div className="absolute bottom-4 left-4 bg-white rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm z-10">
+          <div className="absolute bottom-4 left-4 rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm z-10 bg-white">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">{cityData.name}</h2>
             
             <div className="flex flex-col space-y-4">

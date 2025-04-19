@@ -22,7 +22,40 @@ interface CityData {
     lat: number;
     lon: number;
   };
-  sampleData: any[];
+  sampleData: Array<{
+    components: Record<string, number>;
+    dt: number;
+    weather: {
+      temp: number;
+      feels_like: number;
+      humidity: number;
+      pressure: number;
+      wind_speed: number;
+      description: string;
+      icon: string;
+    };
+  }>;
+  hourlyForecast?: Array<{
+    dt: number;
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    wind_speed: number;
+    description: string;
+    icon: string;
+  }>;
+  dailyForecast?: Array<{
+    dt: number;
+    temp: {
+      day: number;
+      min: number;
+      max: number;
+    };
+    humidity: number;
+    wind_speed: number;
+    description: string;
+    icon: string;
+  }>;
 }
 
 const CityDetailsPage = () => {
@@ -159,51 +192,123 @@ const CityDetailsPage = () => {
     const weather = cityData.sampleData[0].weather;
     
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Current Weather */}
-          <div className="bg-blue-50 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Current Weather</h3>
-                <p className="text-gray-600">{weather.description}</p>
+      <div className="space-y-6">
+        {/* Current Weather Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Current Weather */}
+            <div className="bg-blue-50 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">Current Weather</h3>
+                  <p className="text-gray-600">{weather.description}</p>
+                </div>
+                <img 
+                  src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`} 
+                  alt="Weather icon"
+                  className="w-16 h-16"
+                />
               </div>
-              <img 
-                src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`} 
-                alt="Weather icon"
-                className="w-16 h-16"
-              />
+              <div className="text-4xl font-bold text-gray-800">
+                {Math.round(weather.temp)}°C
+              </div>
+              <div className="text-gray-600 mt-2">
+                Feels like: {Math.round(weather.feels_like)}°C
+              </div>
             </div>
-            <div className="text-4xl font-bold text-gray-800">
-              {Math.round(weather.temp)}°C
-            </div>
-            <div className="text-gray-600 mt-2">
-              Feels like: {Math.round(weather.feels_like)}°C
-            </div>
-          </div>
 
-          {/* Weather Details */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <div className="text-sm text-gray-500 mb-1">Humidity</div>
-              <div className="text-xl font-semibold">{weather.humidity}%</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <div className="text-sm text-gray-500 mb-1">Wind Speed</div>
-              <div className="text-xl font-semibold">{weather.wind_speed} m/s</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <div className="text-sm text-gray-500 mb-1">Pressure</div>
-              <div className="text-xl font-semibold">{weather.pressure} hPa</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 border border-gray-100">
-              <div className="text-sm text-gray-500 mb-1">Last Updated</div>
-              <div className="text-sm font-medium">
-                {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
+            {/* Weather Details */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl p-4 border border-gray-100">
+                <div className="text-sm text-gray-500 mb-1">Humidity</div>
+                <div className="text-xl font-semibold">{weather.humidity}%</div>
+              </div>
+              <div className="bg-white rounded-xl p-4 border border-gray-100">
+                <div className="text-sm text-gray-500 mb-1">Wind Speed</div>
+                <div className="text-xl font-semibold">{weather.wind_speed} m/s</div>
+              </div>
+              <div className="bg-white rounded-xl p-4 border border-gray-100">
+                <div className="text-sm text-gray-500 mb-1">Pressure</div>
+                <div className="text-xl font-semibold">{weather.pressure} hPa</div>
+              </div>
+              <div className="bg-white rounded-xl p-4 border border-gray-100">
+                <div className="text-sm text-gray-500 mb-1">Last Updated</div>
+                <div className="text-sm font-medium">
+                  {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Hourly Forecast */}
+        {cityData.hourlyForecast && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Hourly Forecast</h3>
+            <div className="overflow-x-auto">
+              <div className="flex space-x-4 min-w-max">
+                {cityData.hourlyForecast.slice(0, 24).map((hour, index) => (
+                  <div key={index} className="flex flex-col items-center p-4 bg-blue-50 rounded-xl min-w-[100px]">
+                    <div className="text-sm font-medium text-gray-600">
+                      {new Date(hour.dt * 1000).toLocaleTimeString([], { hour: '2-digit' })}
+                    </div>
+                    <img 
+                      src={`https://openweathermap.org/img/wn/${hour.icon}@2x.png`} 
+                      alt="Weather icon"
+                      className="w-12 h-12 my-2"
+                    />
+                    <div className="text-lg font-semibold text-gray-800">
+                      {Math.round(hour.temp)}°C
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {hour.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Daily Forecast */}
+        {cityData.dailyForecast && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Forecast</h3>
+            <div className="space-y-4">
+              {cityData.dailyForecast.slice(0, 7).map((day, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-lg font-medium text-gray-800 min-w-[120px]">
+                      {new Date(day.dt * 1000).toLocaleDateString([], { weekday: 'long' })}
+                    </div>
+                    <img 
+                      src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`} 
+                      alt="Weather icon"
+                      className="w-12 h-12"
+                    />
+                    <div className="text-gray-600">
+                      {day.description}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-lg font-semibold text-gray-800">
+                      {Math.round(day.temp.max)}°C
+                    </div>
+                    <div className="text-gray-500">
+                      {Math.round(day.temp.min)}°C
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {day.humidity}% humidity
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {day.wind_speed} m/s
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -264,7 +369,7 @@ const CityDetailsPage = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full md:w-80 md:ml-6">
               <h3 className="text-lg font-semibold mb-4 text-gray-800">Current Conditions</h3>
               
@@ -320,80 +425,44 @@ const CityDetailsPage = () => {
         </div>
       </div>
 
-      {/* Main Content Tabs */}
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 border-b border-gray-200">
-          <div className="flex space-x-8">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className={`px-4 py-2 font-medium text-sm border-b-2 ${
-                activeTab === 'overview' 
-                  ? 'border-blue-500 text-blue-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Overview
-            </button>
-            <button 
-              onClick={() => setActiveTab('weather')}
-              className={`px-4 py-2 font-medium text-sm border-b-2 ${
-                activeTab === 'weather' 
-                  ? 'border-blue-500 text-blue-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Weather Details
-            </button>
-            <button 
-              onClick={() => setActiveTab('trends')}
-              className={`px-4 py-2 font-medium text-sm border-b-2 ${
-                activeTab === 'trends' 
-                  ? 'border-blue-500 text-blue-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Historical Trends
-            </button>
-            <button 
-              onClick={() => setActiveTab('health')}
-              className={`px-4 py-2 font-medium text-sm border-b-2 ${
-                activeTab === 'health' 
-                  ? 'border-blue-500 text-blue-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Health Impact
-            </button>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        </div>
-        
-        {/* Tab Content */}
-        <div>
-          {activeTab === 'overview' && (
-            <div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Weather Details Section */}
+            {renderWeatherDetails()}
+
+            {/* Overview Section */}
+            <div className="space-y-6">
               {/* Air Quality Trends Chart */}
-              <div className="mb-10">
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                  <div className="p-6 border-b border-gray-100">
-                    <div className="flex items-center">
-                      <ChartBarIcon className="h-5 w-5 text-blue-500 mr-2" />
-                      <h2 className="text-xl font-bold text-gray-800">Air Quality Trends</h2>
-                    </div>
-                    <p className="text-gray-500 text-sm mt-1">Historical data for the past 5 days</p>
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                <div className="p-6 border-b border-gray-100">
+                  <div className="flex items-center">
+                    <ChartBarIcon className="h-5 w-5 text-blue-500 mr-2" />
+                    <h2 className="text-xl font-bold text-gray-800">Air Quality Trends</h2>
                   </div>
-                  
-                  <div className="p-4">
-                    <AqiTrendsChart 
-                      lat={cityData.coordinates.lat} 
-                      lon={cityData.coordinates.lon} 
-                      cityName={cityName} 
-                    />
-                  </div>
+                  <p className="text-gray-500 text-sm mt-1">Historical data for the past 5 days</p>
+                </div>
+                
+                <div className="p-4">
+                  <AqiTrendsChart 
+                    lat={cityData.coordinates.lat} 
+                    lon={cityData.coordinates.lon} 
+                    cityName={cityName} 
+                  />
                 </div>
               </div>
-              
+
               {/* Detailed Pollutant Analysis */}
-              <div>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-6">Pollutant Analysis</h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -445,19 +514,6 @@ const CityDetailsPage = () => {
                           </div>
                           
                           <div className="text-xs text-gray-500 mt-1">{range}</div>
-                          
-                          <div className="mt-4 pt-4 border-t border-gray-100">
-                            <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">Health Impact</h4>
-                            <p className="text-sm text-gray-600">
-                              {key === 'pm2_5' ? 'Can penetrate deep into lungs and bloodstream, causing respiratory and cardiovascular issues.' : 
-                               key === 'pm10' ? 'Can cause respiratory issues and aggravate conditions like asthma and heart disease.' : 
-                               key === 'o3' ? 'Can irritate respiratory system, reduce lung function and worsen asthma.' : 
-                               key === 'no2' ? 'Can irritate airways and increase susceptibility to respiratory infections.' : 
-                               key === 'so2' ? 'Can harm respiratory system and make breathing difficult.' : 
-                               key === 'co' ? 'Reduces oxygen delivery to organs and can cause headaches and dizziness.' : 
-                               'Can affect health depending on concentration levels.'}
-                            </p>
-                          </div>
                         </div>
                       </div>
                     );
@@ -465,124 +521,8 @@ const CityDetailsPage = () => {
                 </div>
               </div>
             </div>
-          )}
-          
-          {activeTab === 'weather' && renderWeatherDetails()}
-          
-          {activeTab === 'trends' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Historical Trends</h2>
-              <p className="text-gray-600 mb-6">View long-term air quality trends for {cityName}.</p>
-              
-              <div className="h-96 bg-gray-50 flex items-center justify-center rounded-lg">
-                <p className="text-gray-400">More detailed historical trend analysis would be displayed here.</p>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === 'health' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Health Impacts</h2>
-              <p className="text-gray-600 mb-6">Information about how current air quality affects health in {cityName}.</p>
-              
-              <div className={`p-4 rounded-xl ${
-                aqi <= 50 ? 'bg-green-50 border border-green-100' : 
-                aqi <= 100 ? 'bg-yellow-50 border border-yellow-100' : 
-                aqi <= 150 ? 'bg-orange-50 border border-orange-100' : 
-                aqi <= 200 ? 'bg-red-50 border border-red-100' : 
-                aqi <= 300 ? 'bg-purple-50 border border-purple-100' : 
-                'bg-red-100 border border-red-200'
-              }`}>
-                <h3 className={`font-medium ${
-                  aqi <= 50 ? 'text-green-800' : 
-                  aqi <= 100 ? 'text-yellow-800' : 
-                  aqi <= 150 ? 'text-orange-800' : 
-                  aqi <= 200 ? 'text-red-800' : 
-                  aqi <= 300 ? 'text-purple-800' : 
-                  'text-red-900'
-                }`}>
-                  Current Status: {category.label} (AQI: {aqi})
-                </h3>
-                
-                <p className="mt-2 text-gray-700">{category.description}</p>
-                
-                <div className="mt-4">
-                  <h4 className="font-medium text-gray-700 mb-2">Recommended Actions:</h4>
-                  <ul className="space-y-2">
-                    {aqi <= 50 && (
-                      <>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 mt-1.5"></span>
-                          <span>No restrictions, enjoy outdoor activities</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 mt-1.5"></span>
-                          <span>Perfect day for outdoor exercise</span>
-                        </li>
-                      </>
-                    )}
-                    
-                    {aqi > 50 && aqi <= 100 && (
-                      <>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2 mt-1.5"></span>
-                          <span>Unusually sensitive people should consider reducing prolonged outdoor exertion</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2 mt-1.5"></span>
-                          <span>People with respiratory or heart disease should monitor symptoms</span>
-                        </li>
-                      </>
-                    )}
-                    
-                    {aqi > 100 && aqi <= 150 && (
-                      <>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-orange-500 mr-2 mt-1.5"></span>
-                          <span>Children, older adults, and people with respiratory or heart conditions should limit outdoor exposure</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-orange-500 mr-2 mt-1.5"></span>
-                          <span>Everyone else should limit prolonged outdoor exertion</span>
-                        </li>
-                      </>
-                    )}
-                    
-                    {aqi > 150 && aqi <= 200 && (
-                      <>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2 mt-1.5"></span>
-                          <span>Avoid prolonged outdoor activities</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-2 mt-1.5"></span>
-                          <span>Sensitive groups should stay indoors and keep activity levels low</span>
-                        </li>
-                      </>
-                    )}
-                    
-                    {aqi > 200 && (
-                      <>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mr-2 mt-1.5"></span>
-                          <span>Stay indoors and keep windows closed</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mr-2 mt-1.5"></span>
-                          <span>Avoid all outdoor physical activity</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mr-2 mt-1.5"></span>
-                          <span>Use air purifiers if available</span>
-                        </li>
-                      </>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
