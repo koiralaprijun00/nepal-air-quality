@@ -21,12 +21,6 @@ export default function RootLayout({
       <body className="antialiased bg-gray-50">
       <Navigation />
         {children}
-        <footer className="text-center py-4 mt-12 text-gray-600 text-sm">
-          <div className="max-w-7xl mx-auto px-4">
-            <p>&copy; {new Date().getFullYear()} Nepal Air Quality Monitoring. All rights reserved.</p>
-            <p className="mt-1">Data is for demonstration purposes only.</p>
-          </div>
-        </footer>
       </body>
     </html>
   )

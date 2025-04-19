@@ -19,8 +19,8 @@ const AirQualityBlog = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header Section */}
-      <div className=" border-b border-blue-100">
-        <div className="container mx-auto px-4 py-10">
+      <div className="border-b border-blue-100">
+        <div className="max-w-7xl mx-auto px-4 py-10">
           <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition mb-6">
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -33,7 +33,7 @@ const AirQualityBlog = () => {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100">
           {/* Introduction */}
           <div className="p-8 border-b border-gray-100">
