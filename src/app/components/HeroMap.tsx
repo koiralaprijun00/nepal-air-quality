@@ -1,10 +1,18 @@
+// src/app/components/HeroMap.tsx
+'use client'
+
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import Link from 'next/link';
 import { calculateOverallAqi, getAqiCategory } from '../../services/AqiCalculator';
 
 // Set Mapbox token from environment
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+// Using the hardcoded token from your .env.local file as a fallback if needed
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1Ijoia3ByaWp1biIsImEiOiJjajd4OHVweTYzb2l1MndvMzlvdm90c2ltIn0.J25C2fbC1KpcqIRglAh4sA';
+mapboxgl.accessToken = MAPBOX_TOKEN;
+
+// Add console log to debug token
+console.log('Mapbox token available:', !!MAPBOX_TOKEN);
 
 interface CityData {
   name: string;
@@ -12,21 +20,20 @@ interface CityData {
     lat: number;
     lon: number;
   };
-  sampleData?: {
-    components: Record<string, number>;
-  }[];
+  sampleData?: any[];
 }
 
 interface HeroMapProps {
-  cityData: CityData;
+  cityData: CityData | null;
   loading: boolean;
 }
 
 const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
-  const mapContainer = useRef(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [currentDate, setCurrentDate] = useState('');
-  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState<string>('');
+  const [currentTime, setCurrentTime] = useState<string>('');
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -46,26 +53,60 @@ const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
     // Initialize map only once and if container is available
     if (!mapContainer.current || map.current) return;
     
-    // Default to Kathmandu coordinates if no cityData
-    const defaultLat = 27.7172;
-    const defaultLng = 85.3240;
+    // Check if Mapbox is available
+    if (!mapboxgl) {
+      console.error('Mapbox GL is not available');
+      setMapError('Mapbox GL library could not be loaded');
+      return;
+    }
     
-    const lat = cityData?.coordinates?.lat || defaultLat;
-    const lng = cityData?.coordinates?.lon || defaultLng;
-
-    // Initialize map
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [lng, lat],
-      zoom: 10,
-      attributionControl: false
-    });
-
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl({
-      showCompass: false
-    }), 'top-right');
+    // Check if token is set
+    if (!mapboxgl.accessToken) {
+      console.error('Mapbox token is not set');
+      setMapError('Mapbox access token is missing');
+      return;
+    }
+    
+    try {
+      // Default to Kathmandu coordinates if no cityData
+      const defaultLat = 27.7172;
+      const defaultLng = 85.3240;
+      
+      const lat = cityData?.coordinates?.lat || defaultLat;
+      const lng = cityData?.coordinates?.lon || defaultLng;
+  
+      console.log('Initializing map with coordinates:', lng, lat);
+  
+      // Initialize map with error handling
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [lng, lat],
+        zoom: 10,
+        attributionControl: false
+      });
+  
+      // Log successful map creation
+      console.log('Map object created successfully');
+      
+      // Add event listener for map load
+      map.current.on('load', () => {
+        console.log('Map loaded successfully');
+      });
+      
+      // Add event listener for map error
+      map.current.on('error', (e) => {
+        console.error('Map error:', e);
+      });
+  
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl({
+        showCompass: false
+      }), 'top-right');
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      setMapError('Error initializing map: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
     
     // Add marker for the city if we have data
     if (cityData && cityData.coordinates) {
@@ -106,7 +147,7 @@ const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
       // Add marker to map
       new mapboxgl.Marker(markerEl)
         .setLngLat([cityData.coordinates.lon, cityData.coordinates.lat])
-        .addTo(map.current);
+        .addTo(map.current!);
     }
 
     return () => {
@@ -142,11 +183,11 @@ const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
   return (
     <div className="relative">
       {/* Map container */}
-      <div ref={mapContainer} className="h-[450px] w-full" />
+      <div ref={mapContainer} className="h-[450px] w-full bg-gray-100" />
       
       {/* Overlay for city data */}
       {!loading && cityData && (
-        <div className="absolute top-12 left-8 bg-white rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm">
+        <div className="absolute top-12 left-8 bg-white rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm z-10">
           <h2 className="text-2xl font-bold text-gray-800 mb-1">{cityData.name}</h2>
           <p className="text-gray-500 text-sm">
             {currentDate} • {currentTime}
@@ -180,10 +221,24 @@ const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
       
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60">
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60 z-10">
           <div className="flex flex-col items-center">
             <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
             <p className="text-lg text-gray-600">Loading map data...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Error overlay - show this when map fails to load */}
+      {mapError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+          <div className="bg-white p-6 rounded-lg shadow-md max-w-md mx-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Map Loading Error</h3>
+            <p className="text-gray-600 mb-4">{mapError}</p>
+            <p className="text-sm text-gray-500">
+              Please check your internet connection and refresh the page.
+              The air quality information is still available in the city list below.
+            </p>
           </div>
         </div>
       )}

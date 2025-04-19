@@ -1,13 +1,13 @@
-// src/app/page.tsx with Search Feature
+// src/app/page.tsx with Map Hero Section
 'use client'
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import HeroSection from './components/HeroSection';
 import AirQualityDashboard from './components/AirQualityDashboard';
 import SearchBar from './components/SearchBar';
+import HeroMap from './components/HeroMap'; // Import the new HeroMap component
 
 const Home = () => {
   const router = useRouter();
@@ -63,8 +63,10 @@ const Home = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section with featured city */}
-      <HeroSection cityData={featuredCity} loading={loading} />
+      {/* Replace HeroSection with HeroMap */}
+      <div className="relative bg-white shadow-sm border-b border-gray-100">
+        <HeroMap cityData={featuredCity} loading={loading} />
+      </div>
       
       {/* Search Section */}
       <div className="bg-white py-6 shadow-sm border-b border-gray-100">
