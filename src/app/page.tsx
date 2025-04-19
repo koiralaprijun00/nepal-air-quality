@@ -20,6 +20,15 @@ interface CityData {
   sampleData: Array<{
     components: Record<string, number>;
     dt: number;
+    weather: {
+      temp: number;
+      feels_like: number;
+      humidity: number;
+      pressure: number;
+      wind_speed: number;
+      description: string;
+      icon: string;
+    };
   }>;
 }
 
@@ -251,6 +260,38 @@ const Home = () => {
             ${getAQIStatus(aqi)}
           </div>
 
+          ${cityData?.sampleData?.[0]?.weather ? `
+            <div style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-bottom: 16px;
+              padding: 8px 12px;
+              background-color: ${getBackgroundColor(aqi)}15;
+              border-radius: 12px;
+            ">
+              <img 
+                src="https://openweathermap.org/img/wn/${cityData.sampleData[0].weather.icon}@2x.png" 
+                alt="Weather icon"
+                style="width: 40px; height: 40px;"
+              />
+              <div>
+                <div style="font-size: 16px; font-weight: 600;">
+                  ${Math.round(cityData.sampleData[0].weather.temp)}°C
+                </div>
+                <div style="font-size: 12px; color: ${getBackgroundColor(aqi)};">
+                  Feels like: ${Math.round(cityData.sampleData[0].weather.feels_like)}°C
+                </div>
+                <div style="font-size: 12px; color: ${getBackgroundColor(aqi)};">
+                  Humidity: ${cityData.sampleData[0].weather.humidity}%
+                </div>
+                <div style="font-size: 12px; color: ${getBackgroundColor(aqi)};">
+                  Wind: ${cityData.sampleData[0].weather.wind_speed} m/s
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
           <a href="/city/${name.toLowerCase()}" style="
             display: block;
             text-align: center;
@@ -393,24 +434,44 @@ const Home = () => {
         {/* City Data Overlay */}
         {cityData && (
           <div className="absolute bottom-4 left-4 bg-white rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm z-10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-1">{cityData.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{cityData.name}</h2>
             
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="text-4xl font-bold">
+            <div className="flex flex-col space-y-4">
+              <div className="text-4xl font-bold text-left">
                 {cityData?.sampleData?.[0]?.components ? 
                   calculateOverallAqi(cityData.sampleData[0].components).aqi.toFixed(0) : 
                   'N/A'}
               </div>
-              <div className="text-lg">
+              <div className="text-lg text-left">
                 {cityData?.sampleData?.[0]?.components ? 
                   getAQIStatus(calculateOverallAqi(cityData.sampleData[0].components).aqi) : 
                   'Unknown'}
               </div>
-              <div className="text-sm text-gray-500">
-                Last updated: {cityData?.sampleData?.[0]?.dt ? 
-                  new Date(cityData.sampleData[0].dt).toLocaleString() : 
-                  'Unknown'}
-              </div>
+              
+              {/* Weather Information */}
+              {cityData?.sampleData?.[0]?.weather && (
+                <div className="flex items-center space-x-4">
+                  <img 
+                    src={`https://openweathermap.org/img/wn/${cityData.sampleData[0].weather.icon}@2x.png`} 
+                    alt="Weather icon"
+                    className="w-12 h-12"
+                  />
+                  <div className="text-left">
+                    <div className="text-xl font-semibold">
+                      {Math.round(cityData.sampleData[0].weather.temp)}°C
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Feels like: {Math.round(cityData.sampleData[0].weather.feels_like)}°C
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Humidity: {cityData.sampleData[0].weather.humidity}%
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Wind: {cityData.sampleData[0].weather.wind_speed} m/s
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
