@@ -1,12 +1,16 @@
+// src/app/page.tsx with Search Feature
 'use client'
 
 import { useEffect, useState } from 'react';
-import AirQualityDashboard from './components/AirQualityDashboard';
-import HeroSection from './components/HeroSection';
-import { MapPinIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import HeroSection from './components/HeroSection';
+import AirQualityDashboard from './components/AirQualityDashboard';
+import SearchBar from './components/SearchBar';
 
 const Home = () => {
+  const router = useRouter();
   const [citiesData, setCitiesData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +47,17 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Handle search
+  const handleSearch = (query: string) => {
+    const matchedCity = citiesData.find(
+      city => city.name.toLowerCase() === query.toLowerCase()
+    );
+    
+    if (matchedCity) {
+      router.push(`/city/${encodeURIComponent(matchedCity.name.toLowerCase())}`);
+    }
+  };
+
   // Quick access to popular cities
   const popularCities = ['Kathmandu', 'Pokhara', 'Lalitpur', 'Biratnagar', 'Bharatpur'];
   
@@ -51,13 +66,29 @@ const Home = () => {
       {/* Hero Section with featured city */}
       <HeroSection cityData={featuredCity} loading={loading} />
       
+      {/* Search Section */}
+      <div className="bg-white py-6 shadow-sm border-b border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <SearchBar 
+              cities={citiesData} 
+              placeholder="Search for a city to check air quality..." 
+              className="w-full"
+              autoNavigate={true}
+            />
+            <p className="text-sm text-gray-500 mt-2 text-center">
+              Search for any city in Nepal to check its current air quality status
+            </p>
+          </div>
+        </div>
+      </div>
+      
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Last updated information */}
         {lastUpdated && (
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center text-gray-600 text-sm">
-              <ClockIcon className="h-4 w-4 mr-1" />
               <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
             </div>
             <button 

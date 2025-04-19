@@ -27,9 +27,6 @@ const Navigation = () => {
             <NavLink href="/blog" isActive={pathname === '/blog'}>
               Learn About AQI
             </NavLink>
-            <NavLink href="/about" isActive={pathname === '/about'}>
-              About
-            </NavLink>
           </div>
           
           {/* Mobile Navigation Button */}
@@ -75,9 +72,6 @@ const Navigation = () => {
             </MobileNavLink>
             <MobileNavLink href="/blog" isActive={pathname === '/blog'}>
               Learn About AQI
-            </MobileNavLink>
-            <MobileNavLink href="/about" isActive={pathname === '/about'}>
-              About
             </MobileNavLink>
           </div>
         </div>

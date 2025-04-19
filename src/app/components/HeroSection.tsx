@@ -4,21 +4,16 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { calculateOverallAqi, getAqiCategory } from '../../services/AqiCalculator';
 
-interface HeroSectionProps {
-  cityData?: {
-    name: string;
-    coordinates: {
-      lat: number;
-      lon: number;
-    };
-    sampleData: any[];
-  };
-  loading: boolean;
+interface CityData {
+  name: string;
+  sampleData?: {
+    components: Record<string, number>;
+  }[];
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ cityData, loading }) => {
-  const [currentDate, setCurrentDate] = useState<string>('');
-  const [currentTime, setCurrentTime] = useState<string>('');
+const HeroSection = ({ cityData, loading }: { cityData: CityData; loading: boolean }) => {
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
   
   useEffect(() => {
     const now = new Date();
@@ -44,6 +39,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ cityData, loading }) => {
   const aqiData = calculateOverallAqi(components);
   const category = getAqiCategory(aqiData.aqi);
   
+  // Health recommendation based on AQI
   const getHealthRecommendation = (aqi: number) => {
     if (aqi <= 50) {
       return "Air quality is good. Enjoy outdoor activities!";
@@ -61,65 +57,46 @@ const HeroSection: React.FC<HeroSectionProps> = ({ cityData, loading }) => {
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-blue-800 to-blue-600 text-white py-10 md:py-16 overflow-hidden">
-      {/* Background mountains silhouette */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 md:h-32 opacity-10">
-        <svg viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0,100 L80,70 L160,120 L240,40 L320,80 L400,10 L480,90 L560,60 L640,30 L720,70 L800,40 L880,60 L960,20 L1000,50 L1000,200 L0,200 Z" fill="white" />
-        </svg>
-      </div>
-      
+    <div className="relative bg-white text-gray-800 py-10 md:py-16 overflow-hidden shadow-sm border-b border-gray-100">
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold">Nepal Air Quality</h1>
-            <p className="mt-2 text-blue-100">{currentDate} • {currentTime}</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Nepal Air Quality</h1>
           </div>
-          
-          <div className="mt-4 md:mt-0 flex flex-col md:flex-row gap-3">
-            <Link href="/about" className="bg-white text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium transition-colors">
-              About Air Quality
-            </Link>
-            <Link href="/blog" className="bg-blue-700 text-white hover:bg-blue-800 px-4 py-2 rounded-lg font-medium border border-blue-500 transition-colors">
-              Health Guidelines
-            </Link>
-          </div>
-        </div>
         
         {loading ? (
-          <div className="mt-8 p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
+          <div className="mt-8 p-6 bg-gray-50 rounded-xl shadow-sm">
             <div className="flex items-center justify-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white mr-3"></div>
-              <p className="text-lg">Loading latest air quality data...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mr-3"></div>
+              <p className="text-lg text-gray-600">Loading latest air quality data...</p>
             </div>
           </div>
         ) : cityData ? (
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl col-span-1 md:col-span-2">
+            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 col-span-1 md:col-span-2">
               <div className="flex flex-col md:flex-row md:items-center">
                 <div className="mb-4 md:mb-0 md:mr-6">
-                  <h2 className="text-xl font-bold mb-1">{cityData.name}</h2>
-                  <p className="text-blue-100 text-sm">Current Air Quality</p>
+                  <h2 className="text-xl font-bold mb-1 text-gray-800">{cityData.name}</h2>
+                  <p className="text-gray-500 text-sm">Current Air Quality</p>
                   
                   <div className="mt-4 flex items-center">
                     <div className={`w-16 h-16 flex items-center justify-center rounded-xl font-bold text-3xl ${category.color}`}>
                       {aqiData.aqi}
                     </div>
                     <div className="ml-4">
-                      <p className="font-semibold text-lg">{category.label}</p>
-                      <p className="text-sm text-blue-100">US EPA Air Quality Index</p>
+                      <p className="font-semibold text-lg text-gray-800">{category.label}</p>
+                      <p className="text-sm text-gray-500">US EPA Air Quality Index</p>
                     </div>
                   </div>
                 </div>
                 
                 <div className="flex-1 mt-4 md:mt-0">
-                  <h3 className="font-medium mb-2">Health Recommendation:</h3>
-                  <p className="text-blue-50">{getHealthRecommendation(aqiData.aqi)}</p>
+                  <h3 className="font-medium mb-2 text-gray-700">Health Recommendation:</h3>
+                  <p className="text-gray-600">{getHealthRecommendation(aqiData.aqi)}</p>
                   
                   <div className="mt-4">
                     <Link 
                       href={`/city/${encodeURIComponent(cityData.name.toLowerCase())}`}
-                      className="text-white hover:text-blue-200 font-medium flex items-center transition-colors"
+                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center transition-colors"
                     >
                       <span>View detailed report</span>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
@@ -131,12 +108,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ cityData, loading }) => {
               </div>
             </div>
             
-            <div className="p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
-              <h3 className="font-semibold mb-3">Key Pollutants</h3>
+            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+              <h3 className="font-semibold mb-3 text-gray-800">Key Pollutants</h3>
               <div className="space-y-3">
                 {Object.entries(components).slice(0, 3).map(([key, value]) => (
                   <div key={key} className="flex justify-between items-center">
-                    <span className="text-blue-100">
+                    <span className="text-gray-600">
                       {key === 'pm2_5' ? 'PM2.5' : 
                        key === 'pm10' ? 'PM10' : 
                        key === 'o3' ? 'Ozone' : 
@@ -144,27 +121,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({ cityData, loading }) => {
                        key === 'so2' ? 'SO₂' : 
                        key === 'co' ? 'CO' : key}:
                     </span>
-                    <span className="font-medium">{Number(value).toFixed(1)} µg/m³</span>
+                    <span className="font-medium text-gray-800">{Number(value).toFixed(1)} µg/m³</span>
                   </div>
                 ))}
               </div>
               
-              <div className="mt-4 pt-4 border-t border-white border-opacity-20">
-                <h3 className="font-semibold mb-2">Nearby Weather</h3>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <h3 className="font-semibold mb-2 text-gray-800">Nearby Weather</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                     </svg>
-                    <span>Partly Cloudy</span>
+                    <span className="text-gray-600">Partly Cloudy</span>
                   </div>
-                  <span className="font-medium">25°C</span>
+                  <span className="font-medium text-gray-800">25°C</span>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="mt-8 p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
+          <div className="mt-8 p-6 bg-gray-50 rounded-xl shadow-sm text-gray-600">
             <p className="text-center">No data available for the selected location. Please try another city.</p>
           </div>
         )}
