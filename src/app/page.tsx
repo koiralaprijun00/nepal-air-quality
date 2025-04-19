@@ -416,10 +416,15 @@ const Home = () => {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 pt-8 pb-2">
-        <div className="flex justify-between items-center ">
-          <h1 className="text-4xl font-bold text-gray-900">Nepal Air Quality Index</h1>
-          <div className="w-96">
+      <div className="max-w-7xl mx-auto px-4 md:px-0 pt-8 pb-2">
+        <div className="flex flex-col mt-8 mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 mb-1">Air Quality - Nepal</h1>
+          {cityData?.sampleData?.[0]?.dt && (
+            <p className="text-gray-500 text-sm mb-4">
+              Last Updated: {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
+            </p>
+          )}
+          <div className="w-full max-w-md">
             <SearchBar 
               cities={citiesData} 
               autoNavigate={true} 
@@ -430,7 +435,7 @@ const Home = () => {
       </div>
 
       {/* Map Section - Full Width */}
-      <div className="w-full relative h-[600px] mb-8">
+      <div className="max-w-7xl mx-auto relative h-[600px] mb-8">
         {/* City Data Overlay */}
         {cityData && (
           <div className="absolute bottom-4 left-4 rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm z-10 bg-white">
@@ -516,7 +521,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
           <AirQualityDashboard 
             citiesData={citiesData} 

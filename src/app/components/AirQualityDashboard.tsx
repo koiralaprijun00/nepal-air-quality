@@ -85,7 +85,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="p-6 border-b border-gray-100">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div className="flex items-center">
