@@ -213,7 +213,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
       </div>
 
       {viewMode === 'map' ? (
-        <AirQualityMap citiesData={citiesData} loading={loading} error={error} />
+        <AirQualityMap citiesData={citiesData} loading={loading} error={error} cityData={citiesData[0]} />
       ) : (
         <div className={`p-6 ${filteredCities.length === 0 ? '' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
           {filteredCities.length === 0 ? (
