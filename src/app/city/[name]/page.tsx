@@ -135,7 +135,7 @@ const CityDetailsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
             <div className="h-8 w-40 bg-gray-200 rounded mb-8"></div>
             <div className="h-64 bg-gray-200 rounded-2xl mb-6"></div>
@@ -153,7 +153,7 @@ const CityDetailsPage = () => {
   if (error || !cityData) {
     return (
       <div className="min-h-screen bg-white px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <Link 
             href="/" 
             className="inline-flex items-center text-blue-600 hover:text-blue-800 transition mb-8"
@@ -192,7 +192,7 @@ const CityDetailsPage = () => {
     const weather = cityData.sampleData[0].weather;
     
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-7xl mx-auto">
         {/* Current Weather Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -316,8 +316,8 @@ const CityDetailsPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-b border-blue-100">
-        <div className="container mx-auto px-4 py-10">
+      <div className="border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <Link 
               href="/" 
@@ -426,7 +426,7 @@ const CityDetailsPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -438,10 +438,22 @@ const CityDetailsPage = () => {
         ) : (
           <div className="space-y-8">
             {/* Weather Details Section */}
-            {renderWeatherDetails()}
-
-            {/* Overview Section */}
             <div className="space-y-6">
+              {/* Weather Forecast Header */}
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                <div className="p-6 border-b border-gray-100">
+                  <div className="flex items-center">
+                    <CloudIcon className="h-5 w-5 text-blue-500 mr-2" />
+                    <h2 className="text-xl font-bold text-gray-800">Weather Forecast</h2>
+                  </div>
+                  <p className="text-gray-500 text-sm mt-1">Current and forecasted weather conditions</p>
+                </div>
+                
+                <div className="p-4">
+                  {renderWeatherDetails()}
+                </div>
+              </div>
+
               {/* Air Quality Trends Chart */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <div className="p-6 border-b border-gray-100">

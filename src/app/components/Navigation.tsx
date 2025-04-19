@@ -10,8 +10,8 @@ const Navigation = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-gray-100 shadow-md ">
-      <div className="container mx-auto px-4">
+    <nav className="bg-gray-100 shadow-md">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
