@@ -152,6 +152,62 @@ const CityDetailsPage = () => {
   const { aqi, dominantPollutant } = calculateOverallAqi(components);
   const category = getAqiCategory(aqi);
 
+  // Add weather tab content
+  const renderWeatherDetails = () => {
+    if (!cityData?.sampleData?.[0]?.weather) return null;
+
+    const weather = cityData.sampleData[0].weather;
+    
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Current Weather */}
+          <div className="bg-blue-50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Current Weather</h3>
+                <p className="text-gray-600">{weather.description}</p>
+              </div>
+              <img 
+                src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`} 
+                alt="Weather icon"
+                className="w-16 h-16"
+              />
+            </div>
+            <div className="text-4xl font-bold text-gray-800">
+              {Math.round(weather.temp)}°C
+            </div>
+            <div className="text-gray-600 mt-2">
+              Feels like: {Math.round(weather.feels_like)}°C
+            </div>
+          </div>
+
+          {/* Weather Details */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl p-4 border border-gray-100">
+              <div className="text-sm text-gray-500 mb-1">Humidity</div>
+              <div className="text-xl font-semibold">{weather.humidity}%</div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-gray-100">
+              <div className="text-sm text-gray-500 mb-1">Wind Speed</div>
+              <div className="text-xl font-semibold">{weather.wind_speed} m/s</div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-gray-100">
+              <div className="text-sm text-gray-500 mb-1">Pressure</div>
+              <div className="text-xl font-semibold">{weather.pressure} hPa</div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-gray-100">
+              <div className="text-sm text-gray-500 mb-1">Last Updated</div>
+              <div className="text-sm font-medium">
+                {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header Section */}
@@ -279,6 +335,16 @@ const CityDetailsPage = () => {
               Overview
             </button>
             <button 
+              onClick={() => setActiveTab('weather')}
+              className={`px-4 py-2 font-medium text-sm border-b-2 ${
+                activeTab === 'weather' 
+                  ? 'border-blue-500 text-blue-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Weather Details
+            </button>
+            <button 
               onClick={() => setActiveTab('trends')}
               className={`px-4 py-2 font-medium text-sm border-b-2 ${
                 activeTab === 'trends' 
@@ -400,6 +466,8 @@ const CityDetailsPage = () => {
               </div>
             </div>
           )}
+          
+          {activeTab === 'weather' && renderWeatherDetails()}
           
           {activeTab === 'trends' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

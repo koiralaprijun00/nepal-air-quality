@@ -14,17 +14,29 @@ import {
   AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline';
 
-interface CityAirQualityData {
+interface CityData {
   name: string;
   coordinates: {
     lat: number;
     lon: number;
   };
-  sampleData: any[];
+  sampleData: Array<{
+    components: Record<string, number>;
+    dt: number;
+    weather: {
+      temp: number;
+      feels_like: number;
+      humidity: number;
+      pressure: number;
+      wind_speed: number;
+      description: string;
+      icon: string;
+    };
+  }>;
 }
 
 interface AirQualityDashboardProps {
-  citiesData: CityAirQualityData[];
+  citiesData: CityData[];
   loading: boolean;
   error: string | null;
 }
@@ -224,6 +236,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
               const components = sample?.components || {};
               const { aqi, dominantPollutant } = calculateOverallAqi(components);
               const category = getAqiCategory(aqi);
+              const weather = sample?.weather || {};
               
               // Get background gradient based on AQI category
               const getBgGradient = () => {
@@ -299,10 +312,6 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                         </div>
                       ) : (
                         <div>
-                          <p className="text-sm text-gray-600 mb-3">
-                            Date: {new Date(sample.dt * 1000).toLocaleString()}
-                          </p>
-                          
                           <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
                             <h4 className="font-medium text-gray-700 mb-1">US EPA AQI:</h4>
                             <div className="flex items-center">
@@ -312,6 +321,34 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                               <p className="font-medium text-gray-800">{category.label}</p>
                             </div>
                           </div>
+                          
+                          {/* Weather Information */}
+                          {sample?.weather && (
+                            <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
+                              <h4 className="font-medium text-gray-700 mb-2">Current Weather:</h4>
+                              <div className="flex items-center space-x-4">
+                                <img 
+                                  src={`https://openweathermap.org/img/wn/${sample.weather.icon}@2x.png`} 
+                                  alt="Weather icon"
+                                  className="w-12 h-12"
+                                />
+                                <div>
+                                  <div className="text-xl font-semibold">
+                                    {Math.round(sample.weather.temp)}°C
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Feels like: {Math.round(sample.weather.feels_like)}°C
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Humidity: {sample.weather.humidity}%
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Wind: {sample.weather.wind_speed} m/s
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           
                           <div className="mt-3 space-y-2">
                             {Object.entries(components).slice(0, 4).map(([key, value]) => {
