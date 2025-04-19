@@ -13,6 +13,7 @@ interface AirQualityMapProps {
   citiesData: any[];
   loading: boolean;
   error: string | null;
+  cityData: any; 
 }
 
 const AirQualityMap: React.FC<AirQualityMapProps> = ({ citiesData, loading, error }) => {
