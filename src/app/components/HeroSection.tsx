@@ -13,12 +13,12 @@ interface CityData {
   sampleData?: any[];
 }
 
-interface HeroMapProps {
+interface HeroSectionProps {
   cityData: CityData | null;
   loading: boolean;
 }
 
-const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
+const HeroSection: React.FC<HeroSectionProps> = ({ cityData, loading }) => {
   const [currentDate] = useState(new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
@@ -103,4 +103,4 @@ const HeroMap: React.FC<HeroMapProps> = ({ cityData, loading }) => {
   );
 };
 
-export default HeroMap;
+export default HeroSection;

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import AirQualityDashboard from './components/AirQualityDashboard';
 import SearchBar from './components/SearchBar';
-import HeroMap from './components/HeroSection'; // Import the new HeroMap component
+import HeroSection from './components/HeroSection'; // Import the new HeroMap component
 
 const Home = () => {
   const router = useRouter();
@@ -65,7 +65,7 @@ const Home = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Replace HeroSection with HeroMap */}
       <div className="relative bg-white shadow-sm border-b border-gray-100">
-        <HeroMap cityData={featuredCity} loading={loading} />
+        <HeroSection cityData={featuredCity} loading={loading} />
       </div>
       
       {/* Search Section */}
