@@ -65,7 +65,11 @@ const Home = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Replace HeroSection with HeroMap */}
       <div className="relative bg-white shadow-sm border-b border-gray-100">
-        <HeroSection cityData={featuredCity} loading={loading} />
+      <HeroSection 
+  cityData={featuredCity} 
+  loading={loading} 
+  citiesData={citiesData} 
+/>
       </div>
       
       {/* Search Section */}
