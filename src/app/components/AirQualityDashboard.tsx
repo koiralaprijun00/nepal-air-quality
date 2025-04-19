@@ -3,8 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { getPollutantLevel } from '../../services/overallAqiUtils';
-import UsAqiCard from './UsAqiCard';
-import { AqiComparisonBox } from './AqiTrendsChart';
 import { getAqiCategory, calculateOverallAqi } from '../../services/AqiCalculator';
 import AirQualityMap from './AirQualityMap';
 import { 
