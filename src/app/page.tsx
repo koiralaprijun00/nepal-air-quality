@@ -32,10 +32,18 @@ interface CityData {
   }>;
 }
 
+interface WorldCityData {
+  name: string;
+  country: string;
+  aqi: number;
+  components: Record<string, number>;
+}
+
 const Home = () => {
   const router = useRouter();
   const [cityData, setCityData] = useState<CityData | null>(null);
   const [citiesData, setCitiesData] = useState<CityData[]>([]);
+  const [worldCitiesData, setWorldCitiesData] = useState<WorldCityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('Kathmandu');
@@ -220,90 +228,42 @@ const Home = () => {
 
       // Create popup content
       const popupContent = `
-        <div class="popup-content" style="
-          min-width: 200px; 
-          max-width: 220px;
-          background-color: white;
-          border: 4px solid ${getBackgroundColor(aqi)};
-          border-radius: 12px; 
-          padding: 16px;
-          color: ${getBackgroundColor(aqi)};
-          position: relative;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        ">
-          <h3 style="
-            font-size: 24px; 
-            font-weight: 700; 
-            margin: 0 0 12px 0; 
-            color: inherit;
-            letter-spacing: -0.5px;
-          ">${name}</h3>
+        <div style="padding: 10px; min-width: 200px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">${name}</h3>
           
-          <div style="
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            letter-spacing: -1px;
-          ">
-            AQI ${aqi.toFixed(0)}
+          <div style="background-color: ${getBackgroundColor(aqi)}; color: ${aqi <= 100 ? 'black' : 'white'}; padding: 8px; border-radius: 4px; margin-bottom: 10px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold;">${aqi.toFixed(0)}</div>
+            <div style="font-size: 14px;">${getAQIStatus(aqi)}</div>
           </div>
-
-          <div style="
-            font-size: 14px;
-            color: ${getBackgroundColor(aqi)};
-            font-weight: 500;
-            margin-bottom: 16px;
-            padding: 8px 12px;
-            background-color: ${getBackgroundColor(aqi)}15;
-            border-radius: 12px;
-          ">
-            ${getAQIStatus(aqi)}
-          </div>
-
-          ${cityData?.sampleData?.[0]?.weather ? `
-            <div style="
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              margin-bottom: 16px;
-              padding: 8px 12px;
-              background-color: ${getBackgroundColor(aqi)}15;
-              border-radius: 12px;
-            ">
+          
+          ${city.sampleData?.[0]?.weather ? `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 8px; background-color: #f3f4f6; border-radius: 4px;">
               <img 
-                src="https://openweathermap.org/img/wn/${cityData.sampleData[0].weather.icon}@2x.png" 
+                src="https://openweathermap.org/img/wn/${city.sampleData[0].weather.icon}@2x.png" 
                 alt="Weather icon"
                 style="width: 40px; height: 40px;"
               />
               <div>
                 <div style="font-size: 16px; font-weight: 600;">
-                  ${Math.round(cityData.sampleData[0].weather.temp)}°C
+                  ${Math.round(city.sampleData[0].weather.temp)}°C
                 </div>
-                <div style="font-size: 12px; color: ${getBackgroundColor(aqi)};">
-                  Feels like: ${Math.round(cityData.sampleData[0].weather.feels_like)}°C
+                <div style="font-size: 12px; color: #6b7280;">
+                  Feels like: ${Math.round(city.sampleData[0].weather.feels_like)}°C
                 </div>
-                <div style="font-size: 12px; color: ${getBackgroundColor(aqi)};">
-                  Humidity: ${cityData.sampleData[0].weather.humidity}%
+                <div style="font-size: 12px; color: #6b7280;">
+                  Humidity: ${city.sampleData[0].weather.humidity}%
                 </div>
-                <div style="font-size: 12px; color: ${getBackgroundColor(aqi)};">
-                  Wind: ${cityData.sampleData[0].weather.wind_speed} m/s
+                <div style="font-size: 12px; color: #6b7280;">
+                  Wind: ${city.sampleData[0].weather.wind_speed} m/s
                 </div>
               </div>
             </div>
           ` : ''}
-
-          <a href="/city/${name.toLowerCase()}" style="
-            display: block;
-            text-align: center;
-            background-color: ${getBackgroundColor(aqi)};
-            color: white;
-            text-decoration: none;
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-          ">View Details</a>
+          
+          <a href="/city/${name.toLowerCase()}" 
+             style="display: block; text-align: center; background-color: #3b82f6; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: medium;">
+            View Detailed Report
+          </a>
         </div>
       `;
 
@@ -338,27 +298,31 @@ const Home = () => {
 
     console.log(`Added ${markers.current.length} markers`);
 
-    // Cleanup function
-    return () => {
-      markers.current.forEach(marker => marker.remove());
-      markers.current = [];
-    };
+    // No cleanup function - markers will persist until map is destroyed
+    return undefined;
   }, [mapLoaded, error, citiesData]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/data-points');
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // Fetch Nepal cities data
+        const nepalResponse = await fetch('/api/data-points');
+        if (!nepalResponse.ok) {
+          throw new Error(`HTTP error! status: ${nepalResponse.status}`);
         }
+        const nepalData = await nepalResponse.json();
         
-        const data = await response.json();
+        // Fetch world cities data
+        const worldResponse = await fetch('/api/world-cities');
+        if (!worldResponse.ok) {
+          throw new Error(`HTTP error! status: ${worldResponse.status}`);
+        }
+        const worldData = await worldResponse.json();
         
         // Filter out cities without valid coordinates and sample data
-        const validCities = data.filter((city: any) => 
+        const validCities = nepalData.filter((city: any) => 
           city.coordinates && 
           city.coordinates.lat && 
           city.coordinates.lon && 
@@ -369,6 +333,7 @@ const Home = () => {
         
         // Set cities data
         setCitiesData(validCities);
+        setWorldCitiesData(worldData);
         
         // Set featured city (defaulting to Kathmandu if available)
         const kathmandu = validCities.find((city: CityData) => city.name === 'Kathmandu');
@@ -524,7 +489,8 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
           <AirQualityDashboard 
-            citiesData={citiesData} 
+            citiesData={citiesData}
+            worldCitiesData={worldCitiesData}
             loading={loading} 
             error={error} 
           />
