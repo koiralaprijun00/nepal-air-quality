@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://piromomo.com/sitemap.xml
+Sitemap: https://nepal-air-quality.vercel.app/sitemap.xml
