@@ -65,10 +65,30 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'city-details' | 'world'>('world');
   const [worldToggle, setWorldToggle] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const citiesPerPage = 6;
 
   // Filter cities based on search term
   const filteredCities = citiesData
     .filter(city => city.name.toLowerCase().includes(search.toLowerCase()));
+
+  // Calculate total slides
+  const totalSlides = Math.ceil(filteredCities.length / citiesPerPage);
+
+  // Handle slide navigation
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  };
+
+  // Get current slide cities
+  const getCurrentSlideCities = () => {
+    const start = currentSlide * citiesPerPage;
+    return filteredCities.slice(start, start + citiesPerPage);
+  };
 
   // Sort Nepal cities by AQI
   const sortedNepalCities = [...citiesData].sort((a, b) => {
@@ -169,7 +189,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
         </div>
       </div>
 
-      <div className={`p-6 ${filteredCities.length === 0 ? '' : viewMode === 'world' ? 'grid grid-cols-2 gap-6' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
+      <div className={`p-6 ${filteredCities.length === 0 ? '' : viewMode === 'world' ? 'grid grid-cols-2 gap-6' : 'relative'}`}>
         {filteredCities.length === 0 ? (
           <div className="text-center py-10 text-gray-500">
             <p>No cities match your search criteria.</p>
@@ -299,128 +319,169 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
             </div>
           </>
         ) : (
-          filteredCities.map((city, index) => {
-            const sample = city.sampleData?.[0];
-            const components = sample?.components || {};
-            const { aqi, dominantPollutant } = calculateOverallAqi(components);
-            const category = getAqiCategory(aqi);
-            const weather = sample?.weather || {};
-            
-            // Get background gradient based on AQI category
-            const getBgGradient = () => {
-              if (aqi <= 50) return 'from-green-50 to-green-50/40';
-              if (aqi <= 100) return 'from-yellow-50 to-yellow-50/40';
-              if (aqi <= 150) return 'from-orange-50 to-orange-50/40';
-              if (aqi <= 200) return 'from-red-50 to-red-50/40';
-              if (aqi <= 300) return 'from-purple-50 to-purple-50/40';
-              return 'from-red-100 to-red-50/40';
-            };
-            
-            // Get border color based on AQI category
-            const getBorderColor = () => {
-              if (aqi <= 50) return 'border-green-100';
-              if (aqi <= 100) return 'border-yellow-100';
-              if (aqi <= 150) return 'border-orange-100';
-              if (aqi <= 200) return 'border-red-100';
-              if (aqi <= 300) return 'border-purple-100';
-              return 'border-red-200';
-            };
-
-            return (
-              <div 
-                key={index} 
-                className={`rounded-xl overflow-hidden hover:shadow-md transition-shadow border ${getBorderColor()} bg-gradient-to-br ${getBgGradient()}`}
-              >
-                <div className="bg-white/80 backdrop-blur-sm border-b px-4 py-3 flex justify-between items-center">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{city.name}</h3>
-                    <div className="text-xs text-gray-500 flex items-center">
-                      <MapPinIcon className="h-3 w-3 mr-1" />
-                      <span>{city.coordinates.lat.toFixed(2)}°, {city.coordinates.lon.toFixed(2)}°</span>
-                    </div>
-                  </div>
-                  <Link 
-                    href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
-                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
-                  >
-                    Details
-                  </Link>
-                </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getCurrentSlideCities().map((city, index) => {
+                const sample = city.sampleData?.[0];
+                const components = sample?.components || {};
+                const { aqi, dominantPollutant } = calculateOverallAqi(components);
+                const category = getAqiCategory(aqi);
+                const weather = sample?.weather || {};
                 
-                {sample && (
-                  <div className="p-4">
-                    <div>
-                      <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
-                        <h4 className="font-medium text-gray-700 mb-1">US EPA AQI:</h4>
-                        <div className="flex items-center">
-                          <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${category.color} text-xl font-bold shadow-sm mr-3`}>
-                            {aqi}
-                          </div>
-                          <p className="font-medium text-gray-800">{category.label}</p>
+                // Get background gradient based on AQI category
+                const getBgGradient = () => {
+                  if (aqi <= 50) return 'from-green-50 to-green-50/40';
+                  if (aqi <= 100) return 'from-yellow-50 to-yellow-50/40';
+                  if (aqi <= 150) return 'from-orange-50 to-orange-50/40';
+                  if (aqi <= 200) return 'from-red-50 to-red-50/40';
+                  if (aqi <= 300) return 'from-purple-50 to-purple-50/40';
+                  return 'from-red-100 to-red-50/40';
+                };
+                
+                // Get border color based on AQI category
+                const getBorderColor = () => {
+                  if (aqi <= 50) return 'border-green-100';
+                  if (aqi <= 100) return 'border-yellow-100';
+                  if (aqi <= 150) return 'border-orange-100';
+                  if (aqi <= 200) return 'border-red-100';
+                  if (aqi <= 300) return 'border-purple-100';
+                  return 'border-red-200';
+                };
+
+                return (
+                  <div 
+                    key={index} 
+                    className={`rounded-xl overflow-hidden hover:shadow-md transition-shadow border ${getBorderColor()} bg-gradient-to-br ${getBgGradient()}`}
+                  >
+                    <div className="bg-white/80 backdrop-blur-sm border-b px-4 py-3 flex justify-between items-center">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800">{city.name}</h3>
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <MapPinIcon className="h-3 w-3 mr-1" />
+                          <span>{city.coordinates.lat.toFixed(2)}°, {city.coordinates.lon.toFixed(2)}°</span>
                         </div>
                       </div>
-                      
-                      {/* Weather Information */}
-                      {sample?.weather && (
-                        <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
-                          <h4 className="font-medium text-gray-700 mb-2">Current Weather:</h4>
-                          <div className="flex items-center space-x-4">
-                            <img 
-                              src={`https://openweathermap.org/img/wn/${sample.weather.icon}@2x.png`} 
-                              alt="Weather icon"
-                              className="w-12 h-12"
-                            />
-                            <div>
-                              <div className="text-xl font-semibold">
-                                {Math.round(sample.weather.temp)}°C
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                Feels like: {Math.round(sample.weather.feels_like)}°C
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                Humidity: {sample.weather.humidity}%
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                Wind: {sample.weather.wind_speed} m/s
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="mt-3 space-y-2">
-                        {Object.entries(components).slice(0, 4).map(([key, value]) => {
-                          const { label } = getPollutantLevel(key, value as number);
-                          
-                          // Get text color based on pollutant level
-                          let textColor = 'text-green-600';
-                          if (label === 'Moderate' || label === 'Fair') textColor = 'text-yellow-600';
-                          else if (label === 'Poor') textColor = 'text-orange-600';
-                          else if (label === 'Very Poor') textColor = 'text-red-600';
-                          
-                          return (
-                            <div key={key} className="flex justify-between px-3 py-2 bg-white/90 rounded-lg text-sm">
-                              <span className="text-gray-700">
-                                {key === 'pm2_5' ? 'PM2.5' : 
-                                 key === 'pm10' ? 'PM10' : 
-                                 key === 'o3' ? 'O₃' : 
-                                 key === 'no2' ? 'NO₂' : 
-                                 key === 'so2' ? 'SO₂' : 
-                                 key === 'co' ? 'CO' : key.toUpperCase()}:
-                              </span>
-                              <span className={`font-medium ${textColor}`}>
-                                {(value as number).toFixed(1)} µg/m³
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <Link 
+                        href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+                      >
+                        Details
+                      </Link>
                     </div>
+                    
+                    {sample && (
+                      <div className="p-4">
+                        <div>
+                          <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
+                            <h4 className="font-medium text-gray-700 mb-1">US EPA AQI:</h4>
+                            <div className="flex items-center">
+                              <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${category.color} text-xl font-bold shadow-sm mr-3`}>
+                                {aqi}
+                              </div>
+                              <p className="font-medium text-gray-800">{category.label}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Weather Information */}
+                          {sample?.weather && (
+                            <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
+                              <h4 className="font-medium text-gray-700 mb-2">Current Weather:</h4>
+                              <div className="flex items-center space-x-4">
+                                <img 
+                                  src={`https://openweathermap.org/img/wn/${sample.weather.icon}@2x.png`} 
+                                  alt="Weather icon"
+                                  className="w-12 h-12"
+                                />
+                                <div>
+                                  <div className="text-xl font-semibold">
+                                    {Math.round(sample.weather.temp)}°C
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Feels like: {Math.round(sample.weather.feels_like)}°C
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Humidity: {sample.weather.humidity}%
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Wind: {sample.weather.wind_speed} m/s
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="mt-3 space-y-2">
+                            {Object.entries(components).slice(0, 4).map(([key, value]) => {
+                              const { label } = getPollutantLevel(key, value as number);
+                              
+                              // Get text color based on pollutant level
+                              let textColor = 'text-green-600';
+                              if (label === 'Moderate' || label === 'Fair') textColor = 'text-yellow-600';
+                              else if (label === 'Poor') textColor = 'text-orange-600';
+                              else if (label === 'Very Poor') textColor = 'text-red-600';
+                              
+                              return (
+                                <div key={key} className="flex justify-between px-3 py-2 bg-white/90 rounded-lg text-sm">
+                                  <span className="text-gray-700">
+                                    {key === 'pm2_5' ? 'PM2.5' : 
+                                     key === 'pm10' ? 'PM10' : 
+                                     key === 'o3' ? 'O₃' : 
+                                     key === 'no2' ? 'NO₂' : 
+                                     key === 'so2' ? 'SO₂' : 
+                                     key === 'co' ? 'CO' : key.toUpperCase()}:
+                                  </span>
+                                  <span className={`font-medium ${textColor}`}>
+                                    {(value as number).toFixed(1)} µg/m³
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                );
+              })}
+            </div>
+            
+            {/* Navigation Arrows */}
+            {totalSlides > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Slide Indicators */}
+            {totalSlides > 1 && (
+              <div className="flex justify-center mt-4 space-x-2">
+                {Array.from({ length: totalSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentSlide ? 'bg-blue-500 w-4' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
               </div>
-            );
-          })
+            )}
+          </>
         )}
       </div>
     </div>

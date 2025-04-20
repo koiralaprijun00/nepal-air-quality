@@ -184,51 +184,6 @@ const AirQualityIndex = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header with Current AQI */}
-      <div 
-        className="w-full p-6 md:p-8 text-white relative overflow-hidden" 
-        style={{ backgroundColor: currentAqiLevel.color }}
-      >
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-black opacity-10"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">Nepal Air Quality Index</h1>
-              <div className="flex items-center space-x-2">
-                <MapPin size={16} />
-                <span>{currentAqi.location}</span>
-              </div>
-              <div className="text-sm opacity-90 mt-1">{currentAqi.timestamp}</div>
-            </div>
-            
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 md:p-6 text-center">
-              <div className="text-5xl md:text-6xl font-bold mb-2">{currentAqi.value}</div>
-              <div className="text-xl font-semibold">{currentAqiLevel.category}</div>
-              <div className="text-sm mt-2 flex items-center justify-center gap-1">
-                <span>{currentAqi.trend}</span>
-                {currentAqi.trend === "Rising" ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 18L18 6M18 6H10M18 6V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 6L18 18M6 6H14M6 6V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-4 md:mt-8">
-            <div className="text-sm md:text-base font-medium mb-1">Health Recommendation:</div>
-            <p className="opacity-90 text-sm md:text-base">{currentAqiLevel.healthImplications}</p>
-          </div>
-        </div>
-      </div>
-      
       {/* Tab Navigation */}
       <div className="sticky top-0 z-10 bg-white shadow">
         <div className="max-w-7xl mx-auto overflow-x-auto">
