@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 const Navigation = () => {
@@ -15,7 +16,13 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-blue-600 text-xl font-bold">Air Quality Monitor</span>
+              <Image 
+                src="/nepali-hawa.png" 
+                alt="Nepali Hawa" 
+                width={150} 
+                height={40}
+                className="h-10 w-auto transition-transform duration-300 hover:scale-105"
+              />
             </Link>
           </div>
           
