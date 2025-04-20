@@ -462,29 +462,29 @@ const Home = () => {
             )}
             {/* Map Legend */}
             <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-md p-2 z-10">
-              <div className="flex flex-wrap items-center gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-1 text-[10px] sm:text-xs">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center mr-1"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500 flex items-center justify-center mr-1"></div>
                   <span>Good</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-yellow-400 flex items-center justify-center mr-1"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-400 flex items-center justify-center mr-1"></div>
                   <span>Moderate</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-orange-500 flex items-center justify-center mr-1"></div>
-                  <span>Unhealthy (Sensitive Groups)</span>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-orange-500 flex items-center justify-center mr-1"></div>
+                  <span>Unhealthy (SG)</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-red-500 flex items-center justify-center mr-1"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500 flex items-center justify-center mr-1"></div>
                   <span>Unhealthy</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-purple-600 flex items-center justify-center mr-1"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-600 flex items-center justify-center mr-1"></div>
                   <span>Very Unhealthy</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-red-900 flex items-center justify-center mr-1"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-900 flex items-center justify-center mr-1"></div>
                   <span>Hazardous</span>
                 </div>
               </div>
