@@ -54,6 +54,7 @@ const Home = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   
 
@@ -78,8 +79,8 @@ const Home = () => {
         style: 'mapbox://styles/mapbox/dark-v11',
         center: [85.3240, 27.7172], // Kathmandu coordinates
         zoom: 7,
-        minZoom: 3, // Allow zooming out even further
-        maxZoom: 12, // Prevents zooming in too close
+        minZoom: 3,
+        maxZoom: 12,
         accessToken: token,
         attributionControl: false,
         logoPosition: 'bottom-right'
@@ -95,11 +96,16 @@ const Home = () => {
         
         // Set bounds to roughly cover Nepal and surrounding areas
         const nepalBounds = new mapboxgl.LngLatBounds(
-          [70.0, 22.0], // Southwest coordinates (extended further)
-          [95.0, 34.0]  // Northeast coordinates (extended further)
+          [70.0, 22.0], // Southwest coordinates
+          [95.0, 34.0]  // Northeast coordinates
         );
         
         map.current?.setMaxBounds(nepalBounds);
+
+        // Add markers after map is loaded
+        if (citiesData.length > 0) {
+          addMarkers();
+        }
       });
 
       map.current.on('error', (e) => {
@@ -118,50 +124,17 @@ const Home = () => {
       console.error('Error creating map:', err);
       setMapError('Error creating map');
     }
-  }, []);
+  }, [mapContainer.current]);
 
-  // Helper function to get AQI status
-  const getAQIStatus = (aqi: number): string => {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
-  };
-
-  // Helper function to get background color based on AQI
-  const getBackgroundColor = (aqi: number): string => {
-    if (aqi <= 50) return '#10B981'; // Green
-    if (aqi <= 100) return '#FBBF24'; // Yellow
-    if (aqi <= 150) return '#F97316'; // Orange
-    if (aqi <= 200) return '#EF4444'; // Red
-    if (aqi <= 300) return '#7C3AED'; // Purple
-    return '#991B1B'; // Dark Red
-  };
-
-  // Helper function to get status text color
-  const getStatusColor = (aqi: number): string => {
-    if (aqi <= 50) return '#059669'; // Green
-    if (aqi <= 100) return '#D97706'; // Yellow
-    if (aqi <= 150) return '#EA580C'; // Orange
-    if (aqi <= 200) return '#DC2626'; // Red
-    if (aqi <= 300) return '#6D28D9'; // Purple
-    return '#7F1D1D'; // Dark Red
-  };
-
-  // Helper function to get health recommendation
-  const getHealthRecommendation = (aqi: number): string => {
-    if (aqi <= 50) return 'Good for outdoor activities';
-    if (aqi <= 100) return 'Moderate outdoor activity';
-    if (aqi <= 150) return 'Sensitive groups should reduce outdoor activity';
-    if (aqi <= 200) return 'Everyone should reduce outdoor activity';
-    if (aqi <= 300) return 'Avoid outdoor activity';
-    return 'Stay indoors';
-  };
-
-  // Add markers for cities
+  // Separate effect for markers to handle data changes
   useEffect(() => {
+    if (map.current && mapLoaded && citiesData.length > 0) {
+      addMarkers();
+    }
+  }, [citiesData, mapLoaded]);
+
+  // Helper function to add markers
+  const addMarkers = () => {
     if (!map.current || !mapLoaded || error || !citiesData.length) {
       console.log('Skipping marker addition - map not ready or no cities');
       return;
@@ -297,10 +270,47 @@ const Home = () => {
     });
 
     console.log(`Added ${markers.current.length} markers`);
+  };
 
-    // No cleanup function - markers will persist until map is destroyed
-    return undefined;
-  }, [mapLoaded, error, citiesData]);
+  // Helper function to get AQI status
+  const getAQIStatus = (aqi: number): string => {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
+  };
+
+  // Helper function to get background color based on AQI
+  const getBackgroundColor = (aqi: number): string => {
+    if (aqi <= 50) return '#10B981'; // Green
+    if (aqi <= 100) return '#FBBF24'; // Yellow
+    if (aqi <= 150) return '#F97316'; // Orange
+    if (aqi <= 200) return '#EF4444'; // Red
+    if (aqi <= 300) return '#7C3AED'; // Purple
+    return '#991B1B'; // Dark Red
+  };
+
+  // Helper function to get status text color
+  const getStatusColor = (aqi: number): string => {
+    if (aqi <= 50) return '#059669'; // Green
+    if (aqi <= 100) return '#D97706'; // Yellow
+    if (aqi <= 150) return '#EA580C'; // Orange
+    if (aqi <= 200) return '#DC2626'; // Red
+    if (aqi <= 300) return '#6D28D9'; // Purple
+    return '#7F1D1D'; // Dark Red
+  };
+
+  // Helper function to get health recommendation
+  const getHealthRecommendation = (aqi: number): string => {
+    if (aqi <= 50) return 'Good for outdoor activities';
+    if (aqi <= 100) return 'Moderate outdoor activity';
+    if (aqi <= 150) return 'Sensitive groups should reduce outdoor activity';
+    if (aqi <= 200) return 'Everyone should reduce outdoor activity';
+    if (aqi <= 300) return 'Avoid outdoor activity';
+    return 'Stay indoors';
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -379,115 +389,110 @@ const Home = () => {
     ? `Token available (${process.env.NEXT_PUBLIC_MAPBOX_TOKEN.substring(0, 10)}...)` 
     : 'Token missing';
 
-  return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 md:px-0 pt-8 pb-2">
-        <div className="flex flex-col mt-8 mb-4">
-          <h1 className="text-4xl font-bold text-gray-900 mb-1">Air Quality - Nepal</h1>
-          {cityData?.sampleData?.[0]?.dt && (
-            <p className="text-gray-500 text-sm mb-4">
-              Last Updated: {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
-            </p>
-          )}
-          <div className="w-full max-w-md">
-            <SearchBar 
-              cities={citiesData} 
-              autoNavigate={true} 
-              className="w-full" 
-            />
-          </div>
-        </div>
-      </div>
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
 
-      {/* Map Section - Full Width */}
-      <div className="max-w-7xl mx-auto relative h-[600px] mb-8">
-        {/* City Data Overlay */}
-        {cityData && (
-          <div className="absolute bottom-4 left-4 rounded-xl shadow-lg border border-gray-200 p-5 max-w-sm z-10 bg-white">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">{cityData.name}</h2>
-            
-            <div className="flex flex-col space-y-4">
-              <div className="text-4xl font-bold text-left">
-                {cityData?.sampleData?.[0]?.components ? 
-                  calculateOverallAqi(cityData.sampleData[0].components).aqi.toFixed(0) : 
-                  'N/A'}
-              </div>
-              <div className="text-lg text-left">
-                {cityData?.sampleData?.[0]?.components ? 
-                  getAQIStatus(calculateOverallAqi(cityData.sampleData[0].components).aqi) : 
-                  'Unknown'}
-              </div>
-              
-              {/* Weather Information */}
-              {cityData?.sampleData?.[0]?.weather && (
-                <div className="flex items-center space-x-4">
-                  <img 
-                    src={`https://openweathermap.org/img/wn/${cityData.sampleData[0].weather.icon}@2x.png`} 
-                    alt="Weather icon"
-                    className="w-12 h-12"
-                  />
-                  <div className="text-left">
-                    <div className="text-xl font-semibold">
-                      {Math.round(cityData.sampleData[0].weather.temp)}°C
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Feels like: {Math.round(cityData.sampleData[0].weather.feels_like)}°C
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Humidity: {cityData.sampleData[0].weather.humidity}%
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Wind: {cityData.sampleData[0].weather.wind_speed} m/s
-                    </div>
-                  </div>
-                </div>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${isFullScreen ? 'fixed inset-0 z-50 bg-white' : ''}`}>
+        <div className="flex flex-col space-y-6">
+          {/* Header and Search */}
+          <div className="flex flex-col space-y-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Air Quality - Nepal</h1>
+              {cityData?.sampleData?.[0]?.dt && (
+                <p className="text-gray-500 text-sm mt-1">
+                  Last Updated: {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
+                </p>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Map Container */}
-        <div className="w-full h-full">
-          <div 
-            ref={mapContainer} 
-            id="map-container"
-            className="w-full h-full" 
-          />
-        </div>
-
-        {/* Map Legend */}
-        <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-md p-2 z-10">
-          <div className="flex items-center space-x-2 text-xs">
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center mr-1"></div>
-              <span>Good</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-yellow-400 flex items-center justify-center mr-1"></div>
-              <span>Moderate</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-orange-500 flex items-center justify-center mr-1"></div>
-              <span>Unhealthy (Sensitive Groups)</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-red-500 flex items-center justify-center mr-1"></div>
-              <span>Unhealthy</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-purple-600 flex items-center justify-center mr-1"></div>
-              <span>Very Unhealthy</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-red-900 flex items-center justify-center mr-1"></div>
-              <span>Hazardous</span>
+            <div className="w-full max-w-md">
+              <SearchBar 
+                cities={citiesData} 
+                autoNavigate={true} 
+                className="w-full" 
+              />
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8">
+          {/* Map - Full Width */}
+          <div className={`relative ${isFullScreen ? 'h-full' : 'h-[600px]'} rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-white`}>
+            <div 
+              ref={mapContainer} 
+              className="absolute inset-0 w-full h-full"
+            />
+            {/* Fullscreen Toggle Button */}
+            <button
+              onClick={toggleFullScreen}
+              className="absolute bottom-4 right-4 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 focus:outline-none"
+              aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+            >
+              {isFullScreen ? (
+                <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              )}
+            </button>
+            {/* Loading and Error States */}
+            {!mapLoaded && !mapError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                <div className="flex flex-col items-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                  <p className="mt-2 text-gray-600">Loading map...</p>
+                </div>
+              </div>
+            )}
+            {mapError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                <div className="text-center p-4">
+                  <p className="text-red-600 font-medium">{mapError}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Map Legend */}
+            <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-md p-2 z-10">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center mr-1"></div>
+                  <span>Good</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-yellow-400 flex items-center justify-center mr-1"></div>
+                  <span>Moderate</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-orange-500 flex items-center justify-center mr-1"></div>
+                  <span>Unhealthy (Sensitive Groups)</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-red-500 flex items-center justify-center mr-1"></div>
+                  <span>Unhealthy</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-purple-600 flex items-center justify-center mr-1"></div>
+                  <span>Very Unhealthy</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-red-900 flex items-center justify-center mr-1"></div>
+                  <span>Hazardous</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8">
           <AirQualityDashboard 
             citiesData={citiesData}
             worldCitiesData={worldCitiesData}
@@ -495,10 +500,10 @@ const Home = () => {
             error={error} 
           />
         </div>
-      </div>
 
-      <AirQualityInfo />
-    </main>
+        <AirQualityInfo />
+      </div>
+    </div>
   );
 };
 

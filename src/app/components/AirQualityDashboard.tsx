@@ -56,6 +56,15 @@ const isNepalCity = (city: CityData | WorldCityData): city is CityData => {
   return 'sampleData' in city && 'coordinates' in city;
 };
 
+const getStatusColor = (aqi: number): string => {
+  if (aqi <= 50) return '#10B981'; // Green
+  if (aqi <= 100) return '#FBBF24'; // Yellow
+  if (aqi <= 150) return '#F97316'; // Orange
+  if (aqi <= 200) return '#EF4444'; // Red
+  if (aqi <= 300) return '#7C3AED'; // Purple
+  return '#991B1B'; // Dark Red
+};
+
 const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({ 
   citiesData, 
   worldCitiesData = [],
@@ -149,19 +158,19 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-4 sm:p-6 border-b border-gray-100">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div className="flex items-center">
             <ChartBarIcon className="h-5 w-5 text-blue-500 mr-2" />
-            <h2 className="text-xl font-bold text-gray-800">Air Quality by City</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Air Quality by City</h2>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             {/* View Mode Toggle */}
             <div className="flex p-1 bg-gray-100 rounded-lg">
               <button
                 onClick={() => setViewMode('world')}
-                className={`flex items-center px-3 py-1.5 text-xs rounded ${
+                className={`flex items-center px-2 sm:px-3 py-1.5 text-xs rounded ${
                   viewMode === 'world' 
                     ? 'bg-white shadow text-blue-600' 
                     : 'text-gray-600 hover:text-gray-900'
@@ -172,7 +181,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
               </button>
               <button
                 onClick={() => setViewMode('city-details')}
-                className={`flex items-center px-3 py-1.5 text-xs rounded ${
+                className={`flex items-center px-2 sm:px-3 py-1.5 text-xs rounded ${
                   viewMode === 'city-details' 
                     ? 'bg-white shadow text-blue-600' 
                     : 'text-gray-600 hover:text-gray-900'
@@ -200,24 +209,24 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
         </div>
       </div>
 
-      <div className={`p-6 ${filteredCities.length === 0 ? '' : viewMode === 'world' ? 'grid grid-cols-2 gap-6' : 'relative'}`}>
+      <div className={`p-4 sm:p-6 ${filteredCities.length === 0 ? '' : viewMode === 'world' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6' : 'relative'}`}>
         {filteredCities.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
+          <div className="text-center py-8 sm:py-10 text-gray-500">
             <p>No cities match your search criteria.</p>
           </div>
         ) : viewMode === 'world' ? (
           <>
             {/* Left Column - Cities Ranking Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex justify-between items-center mb-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                 <div>
-                  <h3 className="text-xl font-semibold">Live AQI* City Ranking</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold">Live AQI* City Ranking</h3>
                   <p className="text-gray-500 text-sm mt-1">World major city air quality ranking</p>
                 </div>
                 <div className="flex p-1 bg-gray-100 rounded-lg">
                   <button
                     onClick={() => setWorldToggle(false)}
-                    className={`flex items-center px-3 py-1.5 text-xs rounded ${
+                    className={`flex items-center px-2 sm:px-3 py-1.5 text-xs rounded ${
                       !worldToggle 
                         ? 'bg-white shadow text-blue-600' 
                         : 'text-gray-600 hover:text-gray-900'
@@ -227,7 +236,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                   </button>
                   <button
                     onClick={() => setWorldToggle(true)}
-                    className={`flex items-center px-3 py-1.5 text-xs rounded ${
+                    className={`flex items-center px-2 sm:px-3 py-1.5 text-xs rounded ${
                       worldToggle 
                         ? 'bg-white shadow text-blue-600' 
                         : 'text-gray-600 hover:text-gray-900'
@@ -237,42 +246,44 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                   </button>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="grid grid-cols-12 text-sm text-gray-500 pb-2">
-                  <div className="col-span-1">#</div>
-                  <div className="col-span-8">Cities</div>
-                  <div className="col-span-3 text-right">AQI* US</div>
-                </div>
-                {(worldToggle ? sortedWorldCities : sortedNepalCities).slice(0, 10).map((city, index) => {
-                  const cityAqi = isWorldCity(city) 
-                    ? city.aqi 
-                    : calculateOverallAqi(city.sampleData[0]?.components || {}).aqi;
-                  const category = getAqiCategory(cityAqi);
-                  return (
-                    <div key={index} className="grid grid-cols-12 items-center py-2 hover:bg-gray-50">
-                      <div className="col-span-1 text-gray-600">{index + 1}</div>
-                      <div className="col-span-8 flex items-center gap-2">
-                        {!worldToggle ? (
-                          <Link 
-                            href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
-                            className="font-medium hover:text-blue-600 transition-colors"
-                          >
-                            {city.name}
-                          </Link>
-                        ) : (
-                          <span className="font-medium">{city.name}</span>
-                        )}
-                        {isWorldCity(city) && <span className="text-gray-500">({city.country})</span>}
-                      </div>
-                      <div className="col-span-3 flex justify-end">
-                        <span className={`px-3 py-1 rounded-md text-sm ${category.color}`}>
-                          {Math.round(cityAqi)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <div className="overflow-x-auto">
+  <div className="w-full">
+    <div className="grid grid-cols-12 text-sm text-gray-500 pb-2">
+      <div className="col-span-1">#</div>
+      <div className="col-span-7">Cities</div>
+      <div className="col-span-4 text-right pr-2">AQI*</div>
+    </div>
+    {(worldToggle ? sortedWorldCities : sortedNepalCities).slice(0, 10).map((city, index) => {
+      const cityAqi = isWorldCity(city)
+        ? city.aqi
+        : calculateOverallAqi(city.sampleData[0]?.components || {}).aqi;
+      const category = getAqiCategory(cityAqi);
+      return (
+        <div key={index} className="grid grid-cols-12 items-center py-2 border-b border-gray-100 last:border-0">
+          <div className="col-span-1 text-gray-600">{index + 1}</div>
+          <div className="col-span-7">
+            <div className="flex items-center">
+              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(cityAqi) }} />
+              <span className="font-medium text-sm sm:text-base truncate">
+                {isWorldCity(city) ? `${city.name}, ${city.country}` : city.name}
+              </span>
+            </div>
+          </div>
+          <div className="col-span-4 text-right pr-2">
+            <span
+              className="font-medium text-sm sm:text-base"
+              style={{ color: getStatusColor(cityAqi) }}
+            >
+              {cityAqi.toFixed(0)}
+            </span>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+
             </div>
 
             {/* Right Column - Most Polluted and Cleanest Cities */}
