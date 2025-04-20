@@ -363,15 +363,6 @@ const AirQualityIndex = () => {
                 ))}
               </div>
               
-              <div className="mt-8">
-                <h3 className="font-semibold text-gray-800 mb-3">Monthly AQI Trends in Kathmandu</h3>
-                <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <div className="text-gray-500">
-                    [Area chart visualization would be displayed here]
-                  </div>
-                </div>
-              </div>
-              
               <p className="mt-6 text-sm text-gray-500 text-center">Sources: Nepal Health Research Council, WHO Nepal, Ministry of Health and Population, 2023-2024</p>
             </div>
           </div>
