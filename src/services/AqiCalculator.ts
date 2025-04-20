@@ -11,6 +11,12 @@
  * - Ihigh is the index breakpoint corresponding to Chigh
  */
 
+interface AqiResult {
+  aqi: number;
+  category: string;
+  color: string;
+}
+
 // EPA AQI Breakpoints for each pollutant
 interface AqiBreakpoint {
     Clow: number;
@@ -96,40 +102,88 @@ interface AqiBreakpoint {
    * @param concentration The concentration value in μg/m³
    * @returns The calculated AQI value
    */
-  export const calculatePollutantAqi = (pollutant: string, concentration: number): number => {
-    // Map OpenWeather API keys to our breakpoint keys
-    const pollutantKey = pollutant === 'pm2_5' ? 'pm2_5' : pollutant;
-    
-    const breakpoints = aqiBreakpoints[pollutantKey];
-    if (!breakpoints) {
-      console.warn(`No breakpoints defined for pollutant: ${pollutant}`);
-      return 0;
+  export const calculatePollutantAqi = (pollutant: string, concentration: number): AqiResult => {
+    // AQI breakpoints and corresponding concentrations for different pollutants
+    const breakpoints: Record<string, number[][]> = {
+      pm2_5: [
+        [0, 12, 0, 50],
+        [12.1, 35.4, 51, 100],
+        [35.5, 55.4, 101, 150],
+        [55.5, 150.4, 151, 200],
+        [150.5, 250.4, 201, 300],
+        [250.5, 350.4, 301, 400],
+        [350.5, 500.4, 401, 500],
+      ],
+      pm10: [
+        [0, 54, 0, 50],
+        [55, 154, 51, 100],
+        [155, 254, 101, 150],
+        [255, 354, 151, 200],
+        [355, 424, 201, 300],
+        [425, 504, 301, 400],
+        [505, 604, 401, 500],
+      ],
+      co: [
+        [0, 4.4, 0, 50],
+        [4.5, 9.4, 51, 100],
+        [9.5, 12.4, 101, 150],
+        [12.5, 15.4, 151, 200],
+        [15.5, 30.4, 201, 300],
+        [30.5, 40.4, 301, 400],
+        [40.5, 50.4, 401, 500],
+      ],
+      no2: [
+        [0, 53, 0, 50],
+        [54, 100, 51, 100],
+        [101, 360, 101, 150],
+        [361, 649, 151, 200],
+        [650, 1249, 201, 300],
+        [1250, 1649, 301, 400],
+        [1650, 2049, 401, 500],
+      ],
+      o3: [
+        [0, 54, 0, 50],
+        [55, 70, 51, 100],
+        [71, 85, 101, 150],
+        [86, 105, 151, 200],
+        [106, 200, 201, 300],
+      ],
+      so2: [
+        [0, 35, 0, 50],
+        [36, 75, 51, 100],
+        [76, 185, 101, 150],
+        [186, 304, 151, 200],
+        [305, 604, 201, 300],
+        [605, 804, 301, 400],
+        [805, 1004, 401, 500],
+      ],
+    };
+
+    const pollutantBreakpoints = breakpoints[pollutant] || breakpoints.pm2_5;
+    const breakpoint = pollutantBreakpoints.find(
+      ([low, high]) => concentration >= low && concentration <= high
+    );
+
+    if (!breakpoint) {
+      return {
+        aqi: 500,
+        category: 'Hazardous',
+        color: '#660066',
+      };
     }
-  
-    // If concentration is below the lowest breakpoint
-    if (concentration <= breakpoints[0].Clow) {
-      return 0;
-    }
-    
-    // If concentration is above the highest breakpoint
-    const lastIndex = breakpoints.length - 1;
-    if (concentration >= breakpoints[lastIndex].Chigh) {
-      return breakpoints[lastIndex].Ihigh;
-    }
-    
-    // Find the appropriate breakpoint bracket
-    for (const bp of breakpoints) {
-      if (concentration >= bp.Clow && concentration <= bp.Chigh) {
-        // Apply the AQI formula
-        return Math.round(
-          ((bp.Ihigh - bp.Ilow) / (bp.Chigh - bp.Clow)) * 
-          (concentration - bp.Clow) + 
-          bp.Ilow
-        );
-      }
-    }
-    
-    return 0;
+
+    const [cLow, cHigh, aqiLow, aqiHigh] = breakpoint;
+    const aqi = Math.round(
+      ((aqiHigh - aqiLow) / (cHigh - cLow)) * (concentration - cLow) + aqiLow
+    );
+
+    const { category, color } = getAqiCategory(aqi);
+
+    return {
+      aqi,
+      category,
+      color,
+    };
   };
   
   /**
@@ -138,46 +192,22 @@ interface AqiBreakpoint {
    * @param components The components object from OpenWeather API
    * @returns Object containing overall AQI value and dominant pollutant
    */
-  export const calculateOverallAqi = (components: Record<string, number>): { 
-    aqi: number; 
-    dominantPollutant: string;
-    pollutantAqis: Record<string, number>;
-  } => {
-    const pollutantAqis: Record<string, number> = {};
-    let maxAqi = 0;
-    let dominantPollutant = '';
-    
-    // Map from OpenWeather component names to our breakpoint keys
-    const pollutantMap: Record<string, string> = {
-      pm2_5: 'pm2_5',
-      pm10: 'pm10',
-      o3: 'o3',
-      no2: 'no2',
-      so2: 'so2',
-      co: 'co'
-    };
-    
-    // Calculate AQI for each available pollutant
-    for (const [key, value] of Object.entries(components)) {
-      const mappedKey = pollutantMap[key];
-      
-      // Skip pollutants we don't have breakpoints for (like NH3 and NO)
-      if (!mappedKey || !aqiBreakpoints[mappedKey]) continue;
-      
-      const aqi = calculatePollutantAqi(mappedKey, value);
-      pollutantAqis[key] = aqi;
-      
-      // Keep track of the highest AQI and its pollutant
-      if (aqi > maxAqi) {
-        maxAqi = aqi;
-        dominantPollutant = key;
-      }
-    }
-    
+  export const calculateOverallAqi = (components: Record<string, number>): AqiResult => {
+    // Calculate individual AQIs for each pollutant
+    const aqis = Object.entries(components).map(([pollutant, concentration]) => {
+      return calculatePollutantAqi(pollutant, concentration);
+    });
+
+    // Return the highest AQI value
+    const maxAqi = Math.max(...aqis.map(aqi => aqi.aqi));
+
+    // Get the corresponding category and color
+    const { category, color } = getAqiCategory(maxAqi);
+
     return {
       aqi: maxAqi,
-      dominantPollutant,
-      pollutantAqis
+      category,
+      color,
     };
   };
   
@@ -186,46 +216,11 @@ interface AqiBreakpoint {
    * @param aqi The AQI value
    * @returns Object with category label and CSS color class
    */
-  export const getAqiCategory = (aqi: number): { label: string; color: string; description: string } => {
-    if (aqi <= 50) {
-      return { 
-        label: 'Good', 
-        color: 'bg-green-500 text-white',
-        description: 'Air quality is satisfactory, and air pollution poses little or no risk.'
-      };
-    }
-    if (aqi <= 100) {
-      return { 
-        label: 'Moderate', 
-        color: 'bg-yellow-400 text-black',
-        description: 'Air quality is acceptable. However, there may be a risk for some people, particularly those who are unusually sensitive to air pollution.'
-      };
-    }
-    if (aqi <= 150) {
-      return { 
-        label: 'Unhealthy for Sensitive Groups', 
-        color: 'bg-orange-400 text-white',
-        description: 'Members of sensitive groups may experience health effects. The general public is less likely to be affected.'
-      };
-    }
-    if (aqi <= 200) {
-      return { 
-        label: 'Unhealthy', 
-        color: 'bg-red-500 text-white',
-        description: 'Some members of the general public may experience health effects; members of sensitive groups may experience more serious health effects.'
-      };
-    }
-    if (aqi <= 300) {
-      return { 
-        label: 'Very Unhealthy', 
-        color: 'bg-purple-600 text-white',
-        description: 'Health alert: The risk of health effects is increased for everyone.'
-      };
-    }
-    
-    return { 
-      label: 'Hazardous', 
-      color: 'bg-red-900 text-white',
-      description: 'Health warning of emergency conditions: everyone is more likely to be affected.'
-    };
+  export const getAqiCategory = (aqi: number): { category: string; color: string } => {
+    if (aqi <= 50) return { category: 'Good', color: '#00ff00' };
+    if (aqi <= 100) return { category: 'Moderate', color: '#ffff00' };
+    if (aqi <= 150) return { category: 'Unhealthy for Sensitive Groups', color: '#ff9900' };
+    if (aqi <= 200) return { category: 'Unhealthy', color: '#ff0000' };
+    if (aqi <= 300) return { category: 'Very Unhealthy', color: '#990099' };
+    return { category: 'Hazardous', color: '#660066' };
   };
