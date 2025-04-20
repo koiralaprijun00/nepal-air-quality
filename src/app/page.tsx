@@ -7,7 +7,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import AirQualityDashboard from './components/AirQualityDashboard';
 import SearchBar from './components/SearchBar';
 import { calculateOverallAqi } from '../services/AqiCalculator';
-
+import AirQualityInfo from './components/AirQualityInfo';
 // Ensure access token is set
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -496,6 +496,8 @@ const Home = () => {
           />
         </div>
       </div>
+
+      <AirQualityInfo />
     </main>
   );
 };

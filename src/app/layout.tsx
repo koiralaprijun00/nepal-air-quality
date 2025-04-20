@@ -6,7 +6,7 @@ import Navigation from './components/Navigation';
 export const metadata: Metadata = {
   title: 'Nepal Air Quality - Real-time Pollution Monitoring',
   description: 'Monitor real-time air quality and pollution levels across cities in Nepal.',
-  keywords: 'nepal, air quality, pollution, AQI, kathmandu, pokhara, air monitoring',
+  keywords: 'nepal, air quality, pollution, AQI, kathmandu, Pokhara, air monitoring',
 };
 
 export default function RootLayout({
