@@ -20,8 +20,9 @@ export function generateStaticParams() {
   return locales.map(locale => ({ locale }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = await getTranslations({ locale: params.locale, namespace: 'site' });
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const t = await getTranslations({ locale: resolvedParams.locale, namespace: 'site' });
 
   return {
     title: {
@@ -29,7 +30,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       default: t('title'),
     },
     description: t('description'),
-    themeColor: '#ffffff',
   };
 }
 
@@ -37,6 +37,7 @@ export const generateViewport = (): Viewport => {
   return {
     width: 'device-width',
     initialScale: 1.0,
+    themeColor: '#ffffff',
   };
 };
 
@@ -45,15 +46,16 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const resolvedParams = await params;
   // Validate locale
-  if (!locales.includes(params.locale)) notFound();
+  if (!locales.includes(resolvedParams.locale)) notFound();
   
-  const messages = await getMessages({ locale: params.locale });
+  const messages = await getMessages({ locale: resolvedParams.locale });
 
   return (
-    <NextIntlClientProvider locale={params.locale} messages={messages}>
+    <NextIntlClientProvider locale={resolvedParams.locale} messages={messages}>
       <div className="antialiased bg-gray-50 min-h-screen">
         <Navigation />
         {children}
