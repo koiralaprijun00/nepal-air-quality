@@ -1,4 +1,3 @@
-import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import Navigation from './components/Navigation';
 import { NextIntlClientProvider } from 'next-intl';
@@ -7,8 +6,6 @@ import { Metadata, Viewport } from 'next';
 import { getTranslations } from 'next-intl/server';
 import '../globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-
 // Specify default locale and supported locales
 const locales = ['en', 'np'];
 const defaultLocale = 'en';
@@ -16,6 +13,7 @@ const defaultLocale = 'en';
 type Props = {
   children: React.ReactNode;
   params: { locale: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 export function generateStaticParams() {
@@ -42,7 +40,13 @@ export const generateViewport = (): Viewport => {
   };
 };
 
-export default async function RootLayout({ children, params }: Props) {
+export default async function RootLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
   // Validate locale
   if (!locales.includes(params.locale)) notFound();
   
@@ -50,14 +54,10 @@ export default async function RootLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider locale={params.locale} messages={messages}>
-      <html lang={params.locale} suppressHydrationWarning>
-        <body className={inter.className}>
-          <main className="antialiased bg-gray-50 min-h-screen">
-            <Navigation />
-            {children}
-          </main>
-        </body>
-      </html>
+      <div className="antialiased bg-gray-50 min-h-screen">
+        <Navigation />
+        {children}
+      </div>
     </NextIntlClientProvider>
   );
 }
