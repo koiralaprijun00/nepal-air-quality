@@ -9,9 +9,11 @@ import {
   ChartBarIcon, 
   MagnifyingGlassIcon,
   ViewColumnsIcon,
-  AdjustmentsHorizontalIcon
+  AdjustmentsHorizontalIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 
 interface CityData {
   name: string;
@@ -74,6 +76,8 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
 }) => {
   const t = useTranslations('common');
   const dashboardT = useTranslations('dashboard');
+  const params = useParams();
+  const locale = params.locale as string;
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'city-details' | 'world'>('world');
   const [worldToggle, setWorldToggle] = useState(false);
@@ -265,12 +269,25 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                       <div key={index} className="grid grid-cols-12 items-center py-2 border-b border-gray-100 last:border-0">
                         <div className="col-span-1 text-gray-600">{index + 1}</div>
                         <div className="col-span-7">
-                          <div className="flex items-center">
-                            <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(cityAqi) }} />
-                            <span className="font-medium text-sm sm:text-base truncate">
-                              {isWorldCity(city) ? `${city.name}, ${city.country}` : city.name}
-                            </span>
-                          </div>
+                          {isWorldCity(city) ? (
+                            <div className="flex items-center">
+                              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(cityAqi) }} />
+                              <span className="font-medium text-sm sm:text-base truncate">
+                                {city.name}, {city.country}
+                              </span>
+                            </div>
+                          ) : (
+                            <Link 
+                              href={`/${locale}/city/${encodeURIComponent(city.name.toLowerCase())}`}
+                              className="flex items-center rounded-lg p-1 -m-1 transition-colors group relative"
+                            >
+                              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(cityAqi) }} />
+                              <span className="font-medium text-sm sm:text-base truncate text-blue-600 group-hover:text-blue-700">
+                                {city.name}
+                              </span>
+                              <ArrowRightIcon className="h-4 w-4 ml-1 text-blue-500 opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200" />
+                            </Link>
+                          )}
                         </div>
                         <div className="col-span-4 text-right pr-2">
                           <span
@@ -285,6 +302,10 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                   })}
                 </div>
               </div>
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <ArrowRightIcon className="h-3 w-3 mr-1" />
+                {dashboardT('clickCityForInfo')}
+              </p>
             </div>
 
             {/* Right Column - Most Polluted and Cleanest Cities */}
@@ -405,10 +426,14 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                         </div>
                       </div>
                       <Link 
-                        href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
-                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+                        href={`/${locale}/city/${encodeURIComponent(city.name.toLowerCase())}`}
+                        className="flex items-center rounded-lg p-1 -m-1 transition-colors group relative"
                       >
-                        {t('details')}
+                        <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(aqi) }} />
+                        <span className="font-medium text-sm sm:text-base truncate text-gray-800 hover:text-blue-600 group-hover:text-blue-700">
+                          {city.name}
+                        </span>
+                        <ArrowRightIcon className="h-4 w-4 ml-1 text-blue-500 opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200" />
                       </Link>
                     </div>
                     

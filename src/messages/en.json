@@ -102,6 +102,7 @@
     "cleanest": "World cleanest cities",
     "cleanestDescription": "What cities have the best air quality?",
     "usEpaAqi": "US EPA AQI:",
+    "clickCityForInfo": "Click on a city for more information",
     "pollutants": {
       "pm2_5": "PM2.5",
       "pm10": "PM10",
