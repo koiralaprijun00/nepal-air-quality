@@ -59,6 +59,7 @@ const Home = () => {
 
   const t = useTranslations('common');
   const mapT = useTranslations('map');
+  const aqiT = useTranslations('aqi');
 
   // Initialize map
   useEffect(() => {
@@ -70,7 +71,7 @@ const Home = () => {
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     if (!token) {
       console.error('Mapbox token is missing');
-      setMapError('Mapbox token is missing');
+      setMapError(t('mapTokenMissing'));
       return;
     }
 
@@ -223,13 +224,13 @@ const Home = () => {
                   ${Math.round(city.sampleData[0].weather.temp)}°C
                 </div>
                 <div style="font-size: 12px; color: #6b7280;">
-                  Feels like: ${Math.round(city.sampleData[0].weather.feels_like)}°C
+                  ${t('feelsLike')}: ${Math.round(city.sampleData[0].weather.feels_like)}°C
                 </div>
                 <div style="font-size: 12px; color: #6b7280;">
-                  Humidity: ${city.sampleData[0].weather.humidity}%
+                  ${t('humidity')}: ${city.sampleData[0].weather.humidity}%
                 </div>
                 <div style="font-size: 12px; color: #6b7280;">
-                  Wind: ${city.sampleData[0].weather.wind_speed} m/s
+                  ${t('windSpeed')}: ${city.sampleData[0].weather.wind_speed} m/s
                 </div>
               </div>
             </div>
@@ -237,7 +238,7 @@ const Home = () => {
           
           <a href="/city/${name.toLowerCase()}" 
              style="display: block; text-align: center; background-color: #3b82f6; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: medium;">
-            View Detailed Report
+            ${t('viewDetailedReport')}
           </a>
         </div>
       `;
@@ -276,12 +277,12 @@ const Home = () => {
 
   // Helper function to get AQI status
   const getAQIStatus = (aqi: number): string => {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
+    if (aqi <= 50) return aqiT('status.good');
+    if (aqi <= 100) return aqiT('status.moderate');
+    if (aqi <= 150) return aqiT('status.unhealthySG');
+    if (aqi <= 200) return aqiT('status.unhealthy');
+    if (aqi <= 300) return aqiT('status.veryUnhealthy');
+    return aqiT('status.hazardous');
   };
 
   // Helper function to get background color based on AQI
@@ -306,12 +307,12 @@ const Home = () => {
 
   // Helper function to get health recommendation
   const getHealthRecommendation = (aqi: number): string => {
-    if (aqi <= 50) return 'Good for outdoor activities';
-    if (aqi <= 100) return 'Moderate outdoor activity';
-    if (aqi <= 150) return 'Sensitive groups should reduce outdoor activity';
-    if (aqi <= 200) return 'Everyone should reduce outdoor activity';
-    if (aqi <= 300) return 'Avoid outdoor activity';
-    return 'Stay indoors';
+    if (aqi <= 50) return aqiT('recommendations.good');
+    if (aqi <= 100) return aqiT('recommendations.moderate');
+    if (aqi <= 150) return aqiT('recommendations.unhealthySG');
+    if (aqi <= 200) return aqiT('recommendations.unhealthy');
+    if (aqi <= 300) return aqiT('recommendations.veryUnhealthy');
+    return aqiT('recommendations.hazardous');
   };
 
   useEffect(() => {

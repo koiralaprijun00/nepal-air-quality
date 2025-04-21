@@ -25,20 +25,24 @@ const LanguageSwitcher = () => {
   }, []);
 
   const switchLanguage = (locale: string) => {
-    const newPath = pathname.replace(`/${currentLocale}`, `/${locale}`);
+    // Get the current path without the locale
+    const pathWithoutLocale = pathname.split('/').slice(2).join('/');
+    // Create new path with the new locale
+    const newPath = `/${locale}${pathWithoutLocale ? `/${pathWithoutLocale}` : ''}`;
     router.push(newPath);
   };
 
   return (
     <div className="relative group">
       <button
-        className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none"
+        className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none border border-gray-200 rounded-md hover:border-gray-300 hover:bg-zinc-200 transition-colors"
         onClick={() => switchLanguage(currentLocale === 'en' ? 'np' : 'en')}
       >
-        <GlobeAltIcon className="h-5 w-5" />
-        <span>{isMounted ? t('language') : 'Language'}</span>
-        <span className="ml-1 text-xs">
-          {currentLocale === 'en' ? 'ने' : 'EN'}
+        <span className="text-base">
+          {currentLocale === 'en' ? '🇳🇵' : '🇬🇧'}
+        </span>
+        <span className="text-xs">
+          {currentLocale === 'en' ? 'नेपाली' : 'English'}
         </span>
       </button>
     </div>

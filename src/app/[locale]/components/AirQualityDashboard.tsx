@@ -11,6 +11,7 @@ import {
   ViewColumnsIcon,
   AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline';
+import { useTranslations } from 'next-intl';
 
 interface CityData {
   name: string;
@@ -71,6 +72,8 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
   loading, 
   error 
 }) => {
+  const t = useTranslations('common');
+  const dashboardT = useTranslations('dashboard');
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'city-details' | 'world'>('world');
   const [worldToggle, setWorldToggle] = useState(false);
@@ -131,7 +134,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
         <div className="flex items-center justify-center py-12">
           <div className="flex flex-col items-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600">Loading air quality data...</p>
+            <p className="text-gray-600">{t('loadingData')}</p>
           </div>
         </div>
       </div>
@@ -141,7 +144,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-5 rounded-xl shadow-sm">
-        <p className="font-medium mb-1">Error Loading Data</p>
+        <p className="font-medium mb-1">{t('errorLoadingData')}</p>
         <p className="text-sm">{error}</p>
       </div>
     );
@@ -150,8 +153,8 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
   if (!citiesData || citiesData.length === 0) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-5 rounded-xl shadow-sm">
-        <p className="font-medium">No Air Quality Data Available</p>
-        <p className="text-sm mt-1">Please check your connection or try again later.</p>
+        <p className="font-medium">{t('noDataAvailable')}</p>
+        <p className="text-sm mt-1">{t('checkConnection')}</p>
       </div>
     );
   }
@@ -162,7 +165,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div className="flex items-center">
             <ChartBarIcon className="h-5 w-5 text-blue-500 mr-2" />
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Air Quality by City</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{dashboardT('title')}</h2>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3">
@@ -177,7 +180,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                 }`}
               >
                 <MapPinIcon className="h-3.5 w-3.5 mr-1" />
-                World View
+                {dashboardT('worldView')}
               </button>
               <button
                 onClick={() => setViewMode('city-details')}
@@ -188,7 +191,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                 }`}
               >
                 <AdjustmentsHorizontalIcon className="h-3.5 w-3.5 mr-1" />
-                City Details
+                {dashboardT('cityDetails')}
               </button>
             </div>
             
@@ -199,7 +202,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
               </div>
               <input
                 type="text"
-                placeholder={`Search ${viewMode === 'world' ? 'world' : 'Nepal'} cities...`}
+                placeholder={dashboardT('searchPlaceholder', { view: viewMode === 'world' ? dashboardT('world') : dashboardT('nepal') })}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full"
@@ -212,7 +215,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
       <div className={`p-4 sm:p-6 ${filteredCities.length === 0 ? '' : viewMode === 'world' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6' : 'relative'}`}>
         {filteredCities.length === 0 ? (
           <div className="text-center py-8 sm:py-10 text-gray-500">
-            <p>No cities match your search criteria.</p>
+            <p>{dashboardT('noResults')}</p>
           </div>
         ) : viewMode === 'world' ? (
           <>
@@ -220,8 +223,8 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                 <div>
-                  <h3 className="text-lg sm:text-xl font-semibold">Live AQI* City Ranking</h3>
-                  <p className="text-gray-500 text-sm mt-1">World major city air quality ranking</p>
+                  <h3 className="text-lg sm:text-xl font-semibold">{dashboardT('liveRanking')}</h3>
+                  <p className="text-gray-500 text-sm mt-1">{dashboardT('rankingDescription')}</p>
                 </div>
                 <div className="flex p-1 bg-gray-100 rounded-lg">
                   <button
@@ -232,7 +235,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    Nepal
+                    {dashboardT('nepal')}
                   </button>
                   <button
                     onClick={() => setWorldToggle(true)}
@@ -242,56 +245,54 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    World
+                    {dashboardT('world')}
                   </button>
                 </div>
               </div>
               <div className="overflow-x-auto">
-  <div className="w-full">
-    <div className="grid grid-cols-12 text-sm text-gray-500 pb-2">
-      <div className="col-span-1">#</div>
-      <div className="col-span-7">Cities</div>
-      <div className="col-span-4 text-right pr-2">AQI*</div>
-    </div>
-    {(worldToggle ? sortedWorldCities : sortedNepalCities).slice(0, 10).map((city, index) => {
-      const cityAqi = isWorldCity(city)
-        ? city.aqi
-        : calculateOverallAqi(city.sampleData[0]?.components || {}).aqi;
-      const category = getAqiCategory(cityAqi);
-      return (
-        <div key={index} className="grid grid-cols-12 items-center py-2 border-b border-gray-100 last:border-0">
-          <div className="col-span-1 text-gray-600">{index + 1}</div>
-          <div className="col-span-7">
-            <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(cityAqi) }} />
-              <span className="font-medium text-sm sm:text-base truncate">
-                {isWorldCity(city) ? `${city.name}, ${city.country}` : city.name}
-              </span>
-            </div>
-          </div>
-          <div className="col-span-4 text-right pr-2">
-            <span
-              className="font-medium text-sm sm:text-base"
-              style={{ color: getStatusColor(cityAqi) }}
-            >
-              {cityAqi.toFixed(0)}
-            </span>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
-
-
+                <div className="w-full">
+                  <div className="grid grid-cols-12 text-sm text-gray-500 pb-2">
+                    <div className="col-span-1">#</div>
+                    <div className="col-span-7">{t('location')}</div>
+                    <div className="col-span-4 text-right pr-2">{t('aqi')}</div>
+                  </div>
+                  {(worldToggle ? sortedWorldCities : sortedNepalCities).slice(0, 10).map((city, index) => {
+                    const cityAqi = isWorldCity(city)
+                      ? city.aqi
+                      : calculateOverallAqi(city.sampleData[0]?.components || {}).aqi;
+                    const category = getAqiCategory(cityAqi);
+                    return (
+                      <div key={index} className="grid grid-cols-12 items-center py-2 border-b border-gray-100 last:border-0">
+                        <div className="col-span-1 text-gray-600">{index + 1}</div>
+                        <div className="col-span-7">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: getStatusColor(cityAqi) }} />
+                            <span className="font-medium text-sm sm:text-base truncate">
+                              {isWorldCity(city) ? `${city.name}, ${city.country}` : city.name}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="col-span-4 text-right pr-2">
+                          <span
+                            className="font-medium text-sm sm:text-base"
+                            style={{ color: getStatusColor(cityAqi) }}
+                          >
+                            {cityAqi.toFixed(0)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Right Column - Most Polluted and Cleanest Cities */}
             <div className="space-y-6">
               {/* Most Polluted Cities */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-xl font-semibold mb-2">World most polluted cities</h3>
-                <p className="text-gray-500 text-sm mb-4">What cities have the worst air quality?</p>
+                <h3 className="text-xl font-semibold mb-2">{dashboardT('mostPolluted')}</h3>
+                <p className="text-gray-500 text-sm mb-4">{dashboardT('mostPollutedDescription')}</p>
                 <div className="space-y-3">
                   {mostPollutedWorldCities.slice(0, 3).map((city, index) => {
                     const category = getAqiCategory(city.aqi);
@@ -300,7 +301,6 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-
                               <span className="font-medium text-lg">{city.name}, {city.country}</span>
                             </div>
                           </div>
@@ -316,8 +316,8 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
 
               {/* Cleanest Cities */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-xl font-semibold mb-2">World cleanest cities</h3>
-                <p className="text-gray-500 text-sm mb-4">What cities have the best air quality?</p>
+                <h3 className="text-xl font-semibold mb-2">{dashboardT('cleanest')}</h3>
+                <p className="text-gray-500 text-sm mb-4">{dashboardT('cleanestDescription')}</p>
                 <div className="space-y-3">
                   {cleanestWorldCities.slice(0, 3).map((city, index) => {
                     const category = getAqiCategory(city.aqi);
@@ -408,7 +408,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                         href={`/city/${encodeURIComponent(city.name.toLowerCase())}`}
                         className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
                       >
-                        Details
+                        {t('details')}
                       </Link>
                     </div>
                     
@@ -416,7 +416,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                       <div className="p-4">
                         <div>
                           <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
-                            <h4 className="font-medium text-gray-700 mb-1">US EPA AQI:</h4>
+                            <h4 className="font-medium text-gray-700 mb-1">{dashboardT('usEpaAqi')}</h4>
                             <div className="flex items-center">
                               <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${category.color} text-xl font-bold shadow-sm mr-3`}>
                                 {aqi}
@@ -428,7 +428,7 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                           {/* Weather Information */}
                           {sample?.weather && (
                             <div className="p-3 bg-white/90 rounded-lg shadow-sm mb-4">
-                              <h4 className="font-medium text-gray-700 mb-2">Current Weather:</h4>
+                              <h4 className="font-medium text-gray-700 mb-2">{t('currentWeather')}</h4>
                               <div className="flex items-center space-x-4">
                                 <img 
                                   src={`https://openweathermap.org/img/wn/${sample.weather.icon}@2x.png`} 
@@ -437,16 +437,16 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                                 />
                                 <div>
                                   <div className="text-xl font-semibold">
-                                    {Math.round(sample.weather.temp)}°C
+                                    {Math.round(sample.weather.temp)}{dashboardT('units.temperature')}
                                   </div>
                                   <div className="text-sm text-gray-600">
-                                    Feels like: {Math.round(sample.weather.feels_like)}°C
+                                    {t('feelsLike')}: {Math.round(sample.weather.feels_like)}{dashboardT('units.temperature')}
                                   </div>
                                   <div className="text-sm text-gray-600">
-                                    Humidity: {sample.weather.humidity}%
+                                    {t('humidity')}: {sample.weather.humidity}{dashboardT('units.humidity')}
                                   </div>
                                   <div className="text-sm text-gray-600">
-                                    Wind: {sample.weather.wind_speed} m/s
+                                    {t('windSpeed')}: {sample.weather.wind_speed} {dashboardT('units.windSpeed')}
                                   </div>
                                 </div>
                               </div>
@@ -466,15 +466,10 @@ const AirQualityDashboard: React.FC<AirQualityDashboardProps> = ({
                               return (
                                 <div key={key} className="flex justify-between px-3 py-2 bg-white/90 rounded-lg text-sm">
                                   <span className="text-gray-700">
-                                    {key === 'pm2_5' ? 'PM2.5' : 
-                                     key === 'pm10' ? 'PM10' : 
-                                     key === 'o3' ? 'O₃' : 
-                                     key === 'no2' ? 'NO₂' : 
-                                     key === 'so2' ? 'SO₂' : 
-                                     key === 'co' ? 'CO' : key.toUpperCase()}:
+                                    {dashboardT(`pollutants.${key}`)}
                                   </span>
                                   <span className={`font-medium ${textColor}`}>
-                                    {(value as number).toFixed(1)} µg/m³
+                                    {(value as number).toFixed(1)} {dashboardT('units.concentration')}
                                   </span>
                                 </div>
                               );

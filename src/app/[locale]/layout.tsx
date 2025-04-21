@@ -58,7 +58,7 @@ export default async function RootLayout({
   // Validate locale and get messages
   if (!locales.includes(locale)) notFound();
   
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
