@@ -1,7 +1,6 @@
 import "./globals.css"
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { Metadata } from 'next'
-import Navigation from './components/Navigation';
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -67,7 +66,6 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={`${inter.className} antialiased bg-gray-50`}>
-        <Navigation />
         {children}
       </body>
     </html>

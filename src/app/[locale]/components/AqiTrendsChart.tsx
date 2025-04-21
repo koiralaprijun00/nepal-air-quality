@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { calculateOverallAqi, getAqiCategory } from '../../services/AqiCalculator';
+import { calculateOverallAqi, getAqiCategory } from '../../../services/AqiCalculator';
 
 interface AqiTrendsChartProps {
   lat: number;

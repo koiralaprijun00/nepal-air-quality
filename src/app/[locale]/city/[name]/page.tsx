@@ -1,4 +1,4 @@
-// src/app/city/[name]/page.tsx
+// src/app/[locale]/city/[name]/page.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react';
@@ -6,8 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AqiTrendsChart from '../../components/AqiTrendsChart';
 import SearchBar from '../../components/SearchBar';
-import { getPollutantLevel } from '../../../services/overallAqiUtils';
-import { calculateOverallAqi, getAqiCategory } from '../../../services/AqiCalculator';
+import { getPollutantLevel } from '../../../../services/overallAqiUtils';
+import { calculateOverallAqi, getAqiCategory } from '../../../../services/AqiCalculator';
 import { 
   CloudIcon,
   ArrowLeftIcon,

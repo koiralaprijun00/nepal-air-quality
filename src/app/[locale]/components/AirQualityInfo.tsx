@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Camera, Wind, Users, AlertTriangle, Droplets, CloudSnow, Thermometer, Home, MapPin, Gauge, Info, Shield, BarChart4 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const AirQualityIndex = () => {
   // Add state for active tab
   const [activeTab, setActiveTab] = useState('overview');
+  const t = useTranslations('common');
+  const info = useTranslations('info');
 
   // AQI levels, descriptions and health implications
   const aqiLevels = [
@@ -156,11 +159,11 @@ const AirQualityIndex = () => {
 
   // Tab definitions
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: <Info size={18} /> },
-    { id: 'aqi', label: 'AQI Scale', icon: <Gauge size={18} /> },
-    { id: 'pollutants', label: 'Pollutants', icon: <Wind size={18} /> },
-    { id: 'protection', label: 'Protection', icon: <Shield size={18} /> },
-    { id: 'statistics', label: 'Statistics', icon: <BarChart4 size={18} /> }
+    { id: 'overview', label: t('overview'), icon: <Info size={18} /> },
+    { id: 'aqi', label: t('aqi'), icon: <Gauge size={18} /> },
+    { id: 'pollutants', label: t('pollutants'), icon: <Wind size={18} /> },
+    { id: 'protection', label: t('protection'), icon: <Shield size={18} /> },
+    { id: 'statistics', label: t('statistics'), icon: <BarChart4 size={18} /> }
   ];
 
   // Current AQI status mock - would be fetched from API in real application
@@ -213,18 +216,36 @@ const AirQualityIndex = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">{nepalAirQualityInfo.title}</h2>
-                <p className="text-gray-700">{nepalAirQualityInfo.description}</p>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">{info('title')}</h2>
+                <p className="text-gray-700">{info('description')}</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  {nepalAirQualityInfo.keyIssues.map((issue, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-4 rounded-lg bg-gray-50 border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-4">{info('keyIssues.title')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      key: 'seasonalVariation',
+                      icon: <Thermometer size={24} />
+                    },
+                    {
+                      key: 'urbanHotspots',
+                      icon: <MapPin size={24} />
+                    },
+                    {
+                      key: 'indoorPollution',
+                      icon: <Home size={24} />
+                    },
+                    {
+                      key: 'vulnerablePopulations',
+                      icon: <Users size={24} />
+                    }
+                  ].map(({ key, icon }) => (
+                    <div key={key} className="flex items-start space-x-3 p-4 rounded-lg bg-gray-50 border border-gray-100">
                       <div className="text-blue-600 mt-1">
-                        {issue.icon}
+                        {icon}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">{issue.title}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{issue.description}</p>
+                        <h3 className="font-semibold text-gray-800">{info(`keyIssues.${key}.title`)}</h3>
+                        <p className="text-gray-600 text-sm mt-1">{info(`keyIssues.${key}.description`)}</p>
                       </div>
                     </div>
                   ))}
@@ -232,13 +253,35 @@ const AirQualityIndex = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {nepalAirPollutionStats.map((stat, index) => (
-                <div key={index} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 text-center">
-                  <span className="text-3xl md:text-4xl font-bold text-blue-600 block mb-2">{stat.value}</span>
-                  <span className="text-gray-700 text-sm">{stat.description}</span>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">{info('statistics.title')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    {
+                      key: 'rank',
+                      icon: <BarChart4 size={24} />
+                    },
+                    {
+                      key: 'deaths',
+                      icon: <AlertTriangle size={24} />
+                    },
+                    {
+                      key: 'pm25',
+                      icon: <Droplets size={24} />
+                    }
+                  ].map(({ key, icon }) => (
+                    <div key={key} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="text-blue-600">{icon}</div>
+                        <h4 className="font-semibold text-gray-800">{info(`statistics.${key}.title`)}</h4>
+                      </div>
+                      <span className="text-3xl md:text-4xl font-bold text-blue-600 block mb-2">{info(`statistics.${key}.value`)}</span>
+                      <span className="text-gray-700 text-sm">{info(`statistics.${key}.description`)}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         )}
@@ -247,26 +290,26 @@ const AirQualityIndex = () => {
         {activeTab === 'aqi' && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Air Quality Index (AQI) Scale</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">{info('aqiScale.title')}</h2>
               
               {/* AQI Color Scale Bar */}
               <div className="h-3 rounded-full flex mb-8 overflow-hidden">
-                {aqiLevels.map((level, index) => (
+                {Object.entries(info.raw('aqiScale.levels')).map(([key, level]: [string, any], index) => (
                   <div 
-                    key={index} 
+                    key={key} 
                     className="h-full" 
                     style={{ 
                       backgroundColor: level.color, 
-                      width: `${index === 0 || index === aqiLevels.length - 1 ? '15%' : '17.5%'}`
+                      width: `${index === 0 || index === Object.keys(info.raw('aqiScale.levels')).length - 1 ? '15%' : '17.5%'}`
                     }}
                   ></div>
                 ))}
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {aqiLevels.map((level, index) => (
+                {Object.entries(info.raw('aqiScale.levels')).map(([key, level]: [string, any], index) => (
                   <div 
-                    key={index} 
+                    key={key} 
                     className="rounded-lg overflow-hidden border border-gray-100 shadow-sm transition-transform hover:translate-y-[-2px]"
                   >
                     <div className="p-3 flex items-center gap-2" style={{ backgroundColor: level.color }}>
@@ -279,7 +322,7 @@ const AirQualityIndex = () => {
                     <div className="p-4 bg-white">
                       <p className="text-gray-600 text-sm">{level.description}</p>
                       <p className="mt-2 text-gray-800 text-sm">
-                        <span className="inline-block text-blue-800 mr-1 font-medium">Health advice: </span> 
+                        <span className="inline-block text-blue-800 mr-1 font-medium">{info('aqiScale.healthAdvice')} </span> 
                         {level.healthImplications}
                       </p>
                     </div>
@@ -294,27 +337,40 @@ const AirQualityIndex = () => {
         {activeTab === 'pollutants' && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Nepal's Primary Air Pollutants</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">{info('pollutants.title')}</h2>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {pollutants.map((pollutant, index) => (
-                  <div key={index} className="rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                {[
+                  {
+                    key: 'pm25',
+                    icon: <Droplets size={28} />
+                  },
+                  {
+                    key: 'pm10',
+                    icon: <Wind size={28} />
+                  },
+                  {
+                    key: 'winterInversion',
+                    icon: <CloudSnow size={28} />
+                  }
+                ].map(({ key, icon }) => (
+                  <div key={key} className="rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md">
                     <div className="bg-blue-50 p-4 flex justify-between items-center">
-                      <h3 className="text-lg font-bold text-blue-700">{pollutant.name}</h3>
+                      <h3 className="text-lg font-bold text-blue-700">{info(`pollutants.${key}.name`)}</h3>
                       <div className="text-blue-600">
-                        {pollutant.icon}
+                        {icon}
                       </div>
                     </div>
                     <div className="p-4">
-                      <p className="text-gray-600 text-sm mb-4">{pollutant.description}</p>
+                      <p className="text-gray-600 text-sm mb-4">{info(`pollutants.${key}.description`)}</p>
                       <div className="space-y-3">
                         <div className="bg-gray-50 p-3 rounded-lg">
-                          <span className="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-1">Nepal Sources:</span>
-                          <span className="text-gray-700 text-sm">{pollutant.sources}</span>
+                          <span className="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-1">{t('sources')}:</span>
+                          <span className="text-gray-700 text-sm">{info(`pollutants.${key}.sources`)}</span>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-lg">
-                          <span className="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-1">Local Health Effects:</span>
-                          <span className="text-gray-700 text-sm">{pollutant.healthEffects}</span>
+                          <span className="text-xs uppercase tracking-wider font-semibold text-gray-500 block mb-1">{t('healthEffects')}:</span>
+                          <span className="text-gray-700 text-sm">{info(`pollutants.${key}.healthEffects`)}</span>
                         </div>
                       </div>
                     </div>
@@ -329,18 +385,43 @@ const AirQualityIndex = () => {
         {activeTab === 'protection' && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Protection Strategies in Nepal</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">{info('protection.title')}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {protectionMeasures.map((measure, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:border-blue-200 transition-all hover:shadow">
+                {[
+                  {
+                    key: 'checkAqi',
+                    icon: <Camera size={24} />
+                  },
+                  {
+                    key: 'maskRecommendations',
+                    icon: <AlertTriangle size={24} />
+                  },
+                  {
+                    key: 'indoorAirManagement',
+                    icon: <Home size={24} />
+                  },
+                  {
+                    key: 'airPurifiers',
+                    icon: <Wind size={24} />
+                  },
+                  {
+                    key: 'travelTiming',
+                    icon: <Thermometer size={24} />
+                  },
+                  {
+                    key: 'purifyingPlants',
+                    icon: <Droplets size={24} />
+                  }
+                ].map(({ key, icon }) => (
+                  <div key={key} className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:border-blue-200 transition-all hover:shadow">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="text-blue-500 bg-blue-50 p-2 rounded-full">
-                        {measure.icon}
+                        {icon}
                       </div>
-                      <h3 className="font-bold text-gray-800">{measure.title}</h3>
+                      <h3 className="font-bold text-gray-800">{info(`protection.${key}.title`)}</h3>
                     </div>
-                    <p className="text-gray-600 text-sm">{measure.description}</p>
+                    <p className="text-gray-600 text-sm">{info(`protection.${key}.description`)}</p>
                   </div>
                 ))}
               </div>
@@ -352,18 +433,35 @@ const AirQualityIndex = () => {
         {activeTab === 'statistics' && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Nepal Air Pollution: By The Numbers</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">{info('statistics.title')}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {nepalAirPollutionStats.map((stat, index) => (
-                  <div key={index} className="bg-blue-50 rounded-xl p-6 border border-blue-100 flex flex-col items-center text-center">
-                    <span className="text-4xl font-extrabold text-blue-600 mb-3">{stat.value}</span>
-                    <span className="text-gray-700">{stat.description}</span>
+                {[
+                  {
+                    key: 'rank',
+                    icon: <BarChart4 size={24} />
+                  },
+                  {
+                    key: 'deaths',
+                    icon: <AlertTriangle size={24} />
+                  },
+                  {
+                    key: 'pm25',
+                    icon: <Droplets size={24} />
+                  }
+                ].map(({ key, icon }) => (
+                  <div key={key} className="bg-blue-50 rounded-xl p-6 border border-blue-100 flex flex-col items-center text-center">
+                    <div className="text-blue-600 mb-3">
+                      {icon}
+                    </div>
+                    <span className="text-lg font-semibold text-gray-800 mb-2">{info(`statistics.${key}.title`)}</span>
+                    <span className="text-4xl font-extrabold text-blue-600 mb-3">{info(`statistics.${key}.value`)}</span>
+                    <span className="text-gray-700">{info(`statistics.${key}.description`)}</span>
                   </div>
                 ))}
               </div>
               
-              <p className="mt-6 text-sm text-gray-500 text-center">Sources: Nepal Health Research Council, WHO Nepal, Ministry of Health and Population, 2023-2024</p>
+              <p className="mt-6 text-sm text-gray-500 text-center">{info('statistics.sources')}</p>
             </div>
           </div>
         )}
