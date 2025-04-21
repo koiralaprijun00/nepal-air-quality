@@ -6,8 +6,9 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AirQualityDashboard from './components/AirQualityDashboard';
 import SearchBar from './components/SearchBar';
-import { calculateOverallAqi } from '../services/AqiCalculator';
+import { calculateOverallAqi } from '../../services/AqiCalculator';
 import AirQualityInfo from './components/AirQualityInfo';
+import { useTranslations } from 'next-intl';
 // Ensure access token is set
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -56,7 +57,8 @@ const Home = () => {
   const markers = useRef<mapboxgl.Marker[]>([]);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  
+  const t = useTranslations('common');
+  const mapT = useTranslations('map');
 
   // Initialize map
   useEffect(() => {
@@ -400,10 +402,10 @@ const Home = () => {
           {/* Header and Search */}
           <div className="flex flex-col space-y-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Air Quality - Nepal</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{t('airQuality')} - Nepal</h1>
               {cityData?.sampleData?.[0]?.dt && (
                 <p className="text-gray-500 text-sm mt-1">
-                  Last Updated: {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
+                  {t('lastUpdated')}: {new Date(cityData.sampleData[0].dt * 1000).toLocaleString()}
                 </p>
               )}
             </div>
@@ -443,7 +445,7 @@ const Home = () => {
               <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
                 <div className="flex flex-col items-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                  <p className="mt-2 text-gray-600">Loading map...</p>
+                  <p className="mt-2 text-gray-600">{mapT('loading')}</p>
                 </div>
               </div>
             )}
@@ -455,7 +457,7 @@ const Home = () => {
                     onClick={() => window.location.reload()}
                     className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                   >
-                    Retry
+                    {mapT('retry')}
                   </button>
                 </div>
               </div>
@@ -465,27 +467,27 @@ const Home = () => {
               <div className="flex flex-wrap items-center gap-1 text-[10px] sm:text-xs">
                 <div className="flex items-center">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500 flex items-center justify-center mr-1"></div>
-                  <span>Good</span>
+                  <span>{mapT('legend.good')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-400 flex items-center justify-center mr-1"></div>
-                  <span>Moderate</span>
+                  <span>{mapT('legend.moderate')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-orange-500 flex items-center justify-center mr-1"></div>
-                  <span>Unhealthy (SG)</span>
+                  <span>{mapT('legend.unhealthySG')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500 flex items-center justify-center mr-1"></div>
-                  <span>Unhealthy</span>
+                  <span>{mapT('legend.unhealthy')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-600 flex items-center justify-center mr-1"></div>
-                  <span>Very Unhealthy</span>
+                  <span>{mapT('legend.veryUnhealthy')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-900 flex items-center justify-center mr-1"></div>
-                  <span>Hazardous</span>
+                  <span>{mapT('legend.hazardous')}</span>
                 </div>
               </div>
             </div>

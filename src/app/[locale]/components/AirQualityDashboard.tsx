@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getPollutantLevel } from '../../services/overallAqiUtils';
-import { getAqiCategory, calculateOverallAqi } from '../../services/AqiCalculator';
+import { getPollutantLevel } from '../../../services/overallAqiUtils';
+import { getAqiCategory, calculateOverallAqi } from '../../../services/AqiCalculator';
 import { 
   MapPinIcon, 
   ChartBarIcon, 

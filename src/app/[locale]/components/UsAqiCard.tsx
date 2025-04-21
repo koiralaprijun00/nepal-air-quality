@@ -2,7 +2,7 @@
 'use client'
 
 import React from 'react';
-import { calculateOverallAqi, getAqiCategory } from '../../services/AqiCalculator';
+import { calculateOverallAqi, getAqiCategory } from '../../../services/AqiCalculator';
 
 interface UsAqiCardProps {
   pollutants: Record<string, number>;

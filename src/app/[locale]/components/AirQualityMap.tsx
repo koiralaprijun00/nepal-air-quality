@@ -3,7 +3,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { calculateOverallAqi, getAqiCategory } from '../../services/AqiCalculator';
+import { calculateOverallAqi, getAqiCategory } from '../../../services/AqiCalculator';
 
 // Mapbox access token should be stored in your environment variables
 // You should create a .env.local file and add: NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_token_here

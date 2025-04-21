@@ -1,0 +1,39 @@
+{
+  "site": {
+    "title": "नेपाल वायु गुणस्तर",
+    "description": "नेपालको वास्तविक समयमा वायु गुणस्तर निगरानी"
+  },
+  "common": {
+    "airQuality": "वायु गुणस्तर",
+    "location": "स्थान",
+    "lastUpdated": "अन्तिम अपडेट",
+    "aqi": "एक्यूआई",
+    "pm25": "पिएम२.५",
+    "pm10": "पिएम१०",
+    "temperature": "तापक्रम",
+    "humidity": "आर्द्रता",
+    "windSpeed": "हावाको गति",
+    "language": "भाषा",
+    "overview": "अवलोकन",
+    "pollutants": "प्रदूषक",
+    "protection": "सुरक्षा",
+    "statistics": "तथ्याङ्क"
+  },
+  "navigation": {
+    "home": "गृहपृष्ठ",
+    "about": "हाम्रो बारेमा",
+    "contact": "सम्पर्क"
+  },
+  "map": {
+    "loading": "नक्शा लोड हुँदै...",
+    "retry": "पुनः प्रयास गर्नुहोस्",
+    "legend": {
+      "good": "राम्रो",
+      "moderate": "मध्यम",
+      "unhealthySG": "संवेदनशील समूहका लागि अस्वस्थ",
+      "unhealthy": "अस्वस्थ",
+      "veryUnhealthy": "धेरै अस्वस्थ",
+      "hazardous": "खतरनाक"
+    }
+  }
+} 

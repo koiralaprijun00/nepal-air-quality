@@ -1,0 +1,39 @@
+{
+  "site": {
+    "title": "Nepal Air Quality",
+    "description": "Real-time air quality monitoring for Nepal"
+  },
+  "common": {
+    "airQuality": "Air Quality",
+    "location": "Location",
+    "lastUpdated": "Last Updated",
+    "aqi": "AQI",
+    "pm25": "PM2.5",
+    "pm10": "PM10",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "windSpeed": "Wind Speed",
+    "language": "Language",
+    "overview": "Overview",
+    "pollutants": "Pollutants",
+    "protection": "Protection",
+    "statistics": "Statistics"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "map": {
+    "loading": "Loading map...",
+    "retry": "Retry",
+    "legend": {
+      "good": "Good",
+      "moderate": "Moderate",
+      "unhealthySG": "Unhealthy (SG)",
+      "unhealthy": "Unhealthy",
+      "veryUnhealthy": "Very Unhealthy",
+      "hazardous": "Hazardous"
+    }
+  }
+} 

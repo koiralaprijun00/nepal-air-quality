@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Camera, Wind, Users, AlertTriangle, Droplets, CloudSnow, Thermometer, Home, MapPin, Gauge, Info, Shield, BarChart4 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const AirQualityIndex = () => {
   // Add state for active tab
   const [activeTab, setActiveTab] = useState('overview');
+  const t = useTranslations('common');
 
   // AQI levels, descriptions and health implications
   const aqiLevels = [
@@ -156,11 +158,11 @@ const AirQualityIndex = () => {
 
   // Tab definitions
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: <Info size={18} /> },
-    { id: 'aqi', label: 'AQI Scale', icon: <Gauge size={18} /> },
-    { id: 'pollutants', label: 'Pollutants', icon: <Wind size={18} /> },
-    { id: 'protection', label: 'Protection', icon: <Shield size={18} /> },
-    { id: 'statistics', label: 'Statistics', icon: <BarChart4 size={18} /> }
+    { id: 'overview', label: t('overview'), icon: <Info size={18} /> },
+    { id: 'aqi', label: t('aqi'), icon: <Gauge size={18} /> },
+    { id: 'pollutants', label: t('pollutants'), icon: <Wind size={18} /> },
+    { id: 'protection', label: t('protection'), icon: <Shield size={18} /> },
+    { id: 'statistics', label: t('statistics'), icon: <BarChart4 size={18} /> }
   ];
 
   // Current AQI status mock - would be fetched from API in real application
