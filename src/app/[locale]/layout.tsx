@@ -13,21 +13,17 @@ const inter = Inter({ subsets: ['latin'] });
 const locales = ['en', 'np'];
 const defaultLocale = 'en';
 
-interface LayoutProps {
-  params: {
-    locale: string;
-  };
-}
+type Props = {
+  children: React.ReactNode;
+  params: { locale: string };
+};
 
 export function generateStaticParams() {
   return locales.map(locale => ({ locale }));
 }
 
-export const generateMetadata = async ({
-  params,
-}: LayoutProps): Promise<Metadata> => {
-  const { locale } = await params; // Await params
-  const t = await getTranslations('site');
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const t = await getTranslations({ locale: params.locale, namespace: 'site' });
 
   return {
     title: {
@@ -37,7 +33,7 @@ export const generateMetadata = async ({
     description: t('description'),
     themeColor: '#ffffff',
   };
-};
+}
 
 export const generateViewport = (): Viewport => {
   return {
@@ -46,26 +42,22 @@ export const generateViewport = (): Viewport => {
   };
 };
 
-export default async function RootLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { locale: string };
-}) {
-  const { locale } = await params; // Await params
-
-  // Validate locale and get messages
-  if (!locales.includes(locale)) notFound();
+export default async function RootLayout({ children, params }: Props) {
+  // Validate locale
+  if (!locales.includes(params.locale)) notFound();
   
-  const messages = await getMessages({ locale });
+  const messages = await getMessages({ locale: params.locale });
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className={`${inter.className} antialiased bg-gray-50 min-h-screen`}>
-        <Navigation />
-        {children}
-      </div>
+    <NextIntlClientProvider locale={params.locale} messages={messages}>
+      <html lang={params.locale} suppressHydrationWarning>
+        <body className={inter.className}>
+          <main className="antialiased bg-gray-50 min-h-screen">
+            <Navigation />
+            {children}
+          </main>
+        </body>
+      </html>
     </NextIntlClientProvider>
   );
 }
