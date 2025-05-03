@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface SearchBarProps {
@@ -25,6 +25,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [filteredCities, setFilteredCities] = useState<Array<{name: string; coordinates?: {lat: number; lon: number}}>>([]);
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
+  const params = useParams();
+  const locale = params.locale as string;
 
   // Filter cities based on search query
   useEffect(() => {
@@ -68,7 +70,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     if (onSearch) onSearch(cityName);
     
     if (autoNavigate) {
-      router.push(`/city/${encodeURIComponent(cityName.toLowerCase())}`);
+      router.push(`/${locale}/city/${encodeURIComponent(cityName.toLowerCase())}`);
     }
   };
 

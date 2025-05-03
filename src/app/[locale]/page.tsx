@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AirQualityDashboard from './components/AirQualityDashboard';
@@ -42,6 +42,8 @@ interface WorldCityData {
 
 const Home = () => {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const [cityData, setCityData] = useState<CityData | null>(null);
   const [citiesData, setCitiesData] = useState<CityData[]>([]);
   const [worldCitiesData, setWorldCitiesData] = useState<WorldCityData[]>([]);
@@ -204,12 +206,12 @@ const Home = () => {
 
       // Create popup content
       const popupContent = `
-        <div style="padding: 10px; min-width: 200px;">
-          <h3 style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">${name}</h3>
-          
-          <div style="background-color: ${getBackgroundColor(aqi)}; color: ${aqi <= 100 ? 'black' : 'white'}; padding: 8px; border-radius: 4px; margin-bottom: 10px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold;">${aqi.toFixed(0)}</div>
-            <div style="font-size: 14px;">${getAQIStatus(aqi)}</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">${name}</h3>
+            <div class="text-2xl font-bold" style="color: ${getStatusColor(aqi)}">
+              ${Math.round(aqi)}
+            </div>
           </div>
           
           ${city.sampleData?.[0]?.weather ? `
@@ -236,7 +238,7 @@ const Home = () => {
             </div>
           ` : ''}
           
-          <a href="/city/${name.toLowerCase()}" 
+          <a href="/${locale}/city/${name.toLowerCase()}" 
              style="display: block; text-align: center; background-color: #3b82f6; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: medium;">
             ${t('viewDetailedReport')}
           </a>
@@ -380,7 +382,7 @@ const Home = () => {
     );
     
     if (matchedCity) {
-      router.push(`/city/${encodeURIComponent(matchedCity.name.toLowerCase())}`);
+      router.push(`/${locale}/city/${encodeURIComponent(matchedCity.name.toLowerCase())}`);
     }
   };
 

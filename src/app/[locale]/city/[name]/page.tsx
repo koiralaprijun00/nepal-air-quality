@@ -66,6 +66,7 @@ const CityDetailsPage = () => {
   const router = useRouter();
   const params = useParams();
   const cityName = params?.name as string;
+  const locale = params.locale as string;
   
   const [cityData, setCityData] = useState<CityData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,7 +183,7 @@ const CityDetailsPage = () => {
   // Handle search navigation
   const handleSearch = (query: string) => {
     if (query.trim()) {
-      router.push(`/city/${encodeURIComponent(query.toLowerCase())}`);
+      router.push(`/${locale}/city/${encodeURIComponent(query.toLowerCase())}`);
     }
   };
 
@@ -222,7 +223,7 @@ const CityDetailsPage = () => {
       <div className="min-h-screen bg-white px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <Link 
-            href="/" 
+            href={`/${locale}`}
             className="inline-flex items-center text-blue-600 hover:text-blue-800 transition mb-8"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
@@ -236,7 +237,7 @@ const CityDetailsPage = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-2">City Not Found</h2>
             <p className="text-gray-600 mb-6">{error || 'The requested city could not be located.'}</p>
             <Link 
-              href="/" 
+              href={`/${locale}`}
               className="inline-flex items-center justify-center px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
             >
               Return to Dashboard
@@ -562,7 +563,7 @@ const CityDetailsPage = () => {
           {/* Top Navigation Bar */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <Link 
-              href="/" 
+              href={`/${locale}`}
               className="inline-flex items-center text-blue-600 hover:text-blue-800 transition mb-4 md:mb-0 hover:underline"
             >
               <ArrowLeftIcon className="h-4 w-4 mr-2" />
