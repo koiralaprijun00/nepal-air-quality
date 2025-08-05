@@ -38,7 +38,8 @@
     "checkConnection": "Please check your connection or try again later",
     "errorLoadingData": "Error Loading Data",
     "sources": "Nepal Sources",
-    "healthEffects": "Local Health Effects"
+    "healthEffects": "Local Health Effects",
+    "backToHome": "Back to Home"
   },
   "navigation": {
     "home": "Home",

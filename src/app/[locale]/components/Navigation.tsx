@@ -38,6 +38,9 @@ const Navigation = () => {
             <NavLink href={`/${locale}/blog`} isActive={pathname === `/${locale}/blog`}>
               {t('about')}
             </NavLink>
+            <NavLink href={`/${locale}/privacy-policy`} isActive={pathname === `/${locale}/privacy-policy`}>
+              Privacy Policy
+            </NavLink>
             <LanguageSwitcher />
           </div>
           
@@ -85,6 +88,9 @@ const Navigation = () => {
             </MobileNavLink>
             <MobileNavLink href={`/${locale}/blog`} isActive={pathname === `/${locale}/blog`}>
               Learn About AQI
+            </MobileNavLink>
+            <MobileNavLink href={`/${locale}/privacy-policy`} isActive={pathname === `/${locale}/privacy-policy`}>
+              Privacy Policy
             </MobileNavLink>
           </div>
         </div>
