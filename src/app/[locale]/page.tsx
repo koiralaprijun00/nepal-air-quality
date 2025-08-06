@@ -139,111 +139,242 @@ const Home = () => {
   const addHeatmapLayer = () => {
     if (!map.current || !mapLoaded || !citiesData.length) return;
 
-    // Prepare GeoJSON data with AQI values
+    // Create a dense grid of interpolated points for global coverage
+    const generateInterpolatedGrid = () => {
+      const points = [];
+      
+      // Extract valid city data with AQI values
+      const validCities = citiesData.filter(city => {
+        const hasData = city.coordinates?.lat && city.coordinates?.lon && 
+                       city.sampleData?.[0]?.components;
+        return hasData;
+      }).map(city => ({
+        lat: city.coordinates.lat,
+        lon: city.coordinates.lon,
+        aqi: calculateOverallAqi(city.sampleData[0].components).aqi
+      }));
+
+      if (validCities.length === 0) return [];
+
+      // Create a global grid (adjust density as needed)
+      const latStep = 0.5; // Degrees
+      const lonStep = 0.5; // Degrees
+      
+      // Global bounds
+      const minLat = -60, maxLat = 75;
+      const minLon = -180, maxLon = 180;
+      
+      for (let lat = minLat; lat <= maxLat; lat += latStep) {
+        for (let lon = minLon; lon <= maxLon; lon += lonStep) {
+          // Use Inverse Distance Weighting (IDW) for interpolation
+          let totalWeight = 0;
+          let weightedSum = 0;
+          const power = 2; // Power parameter for IDW
+          
+          validCities.forEach(city => {
+            const distance = Math.sqrt(
+              Math.pow(lat - city.lat, 2) + Math.pow(lon - city.lon, 2)
+            );
+            
+            if (distance === 0) {
+              // Exact match
+              weightedSum = city.aqi;
+              totalWeight = 1;
+              return;
+            }
+            
+            const weight = 1 / Math.pow(distance, power);
+            weightedSum += weight * city.aqi;
+            totalWeight += weight;
+          });
+          
+          if (totalWeight > 0) {
+            const interpolatedAqi = weightedSum / totalWeight;
+            
+            // Add some randomness and variation based on geography
+            const variation = (Math.random() - 0.5) * 20;
+            let finalAqi = Math.max(0, interpolatedAqi + variation);
+            
+            // Apply geographical modifiers (rough approximations)
+            // Urban areas tend to have higher pollution
+            const isUrbanArea = validCities.some(city => {
+              const dist = Math.sqrt(Math.pow(lat - city.lat, 2) + Math.pow(lon - city.lon, 2));
+              return dist < 1; // Within ~100km of a monitored city
+            });
+            
+            if (isUrbanArea) {
+              finalAqi *= 1.2; // Increase pollution in urban areas
+            }
+            
+            // Ocean areas should have cleaner air
+            const isLikelyOcean = (
+              (lat < 0 && lon > 100 && lon < 180) || // Southern Ocean
+              (lat > 0 && lat < 30 && lon > -30 && lon < 50) || // Atlantic
+              (lat > 30 && lon < -100) // Pacific
+            );
+            
+            if (isLikelyOcean) {
+              finalAqi = Math.min(finalAqi, 50); // Cap ocean pollution
+            }
+            
+            // Add multiple points around each grid point for smoother interpolation
+            const jitterAmount = 0.2;
+            for (let i = 0; i < 3; i++) {
+              const jitterLat = lat + (Math.random() - 0.5) * jitterAmount;
+              const jitterLon = lon + (Math.random() - 0.5) * jitterAmount;
+              const jitterAqi = finalAqi + (Math.random() - 0.5) * 10;
+              
+              points.push({
+                type: 'Feature' as const,
+                properties: {
+                  aqi: Math.max(0, Math.min(500, jitterAqi))
+                },
+                geometry: {
+                  type: 'Point' as const,
+                  coordinates: [jitterLon, jitterLat]
+                }
+              });
+            }
+          }
+        }
+      }
+      
+      return points;
+    };
+
+    const interpolatedPoints = generateInterpolatedGrid();
+    
     const heatmapData = {
       type: 'FeatureCollection' as const,
-      features: citiesData.map(city => {
-        const { coordinates, sampleData } = city;
-        const { lat, lon } = coordinates || {};
-        
-        if (!lat || !lon) return null;
-
-        const hasAirQualityData = sampleData && sampleData.length > 0 && sampleData[0]?.components;
-        const components = hasAirQualityData && sampleData[0]?.components || {};
-        const aqiData = calculateOverallAqi(components);
-        
-        return {
-          type: 'Feature' as const,
-          properties: {
-            aqi: aqiData.aqi
-          },
-          geometry: {
-            type: 'Point' as const,
-            coordinates: [lon, lat]
-          }
-        };
-      }).filter(feature => feature !== null)
+      features: interpolatedPoints
     };
 
     // Add source if it doesn't exist
-    if (!map.current?.getSource('heatmap-data')) {
-      map.current?.addSource('heatmap-data', {
+    if (!map.current?.getSource('global-heatmap-data')) {
+      map.current?.addSource('global-heatmap-data', {
         type: 'geojson',
         data: heatmapData
       });
+    } else {
+      // Update existing source
+      const source = map.current.getSource('global-heatmap-data') as mapboxgl.GeoJSONSource;
+      source.setData(heatmapData);
     }
 
     // Add heatmap layer if it doesn't exist
-    if (!map.current?.getLayer('heatmap-layer')) {
+    if (!map.current?.getLayer('global-heatmap-layer')) {
       map.current?.addLayer({
-        id: 'heatmap-layer',
+        id: 'global-heatmap-layer',
         type: 'heatmap',
-        source: 'heatmap-data',
+        source: 'global-heatmap-data',
         maxzoom: 15,
         paint: {
-          // Increase the heatmap weight based on AQI value
+          // Weight based on AQI value
           'heatmap-weight': [
             'interpolate',
             ['linear'],
             ['get', 'aqi'],
-            0, 0,
-            300, 1
+            0, 0.1,
+            50, 0.3,
+            100, 0.5,
+            150, 0.7,
+            200, 0.9,
+            300, 1,
+            500, 1
           ],
-          // Increase the heatmap color intensity based on zoom level
+          // Intensity based on zoom level
           'heatmap-intensity': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            0, 1,
-            15, 3
+            0, 0.6,
+            5, 1,
+            10, 1.2,
+            15, 1.5
           ],
-          // Color ramp for heatmap based on AQI values
+          // Color ramp for global air quality heatmap
           'heatmap-color': [
             'interpolate',
             ['linear'],
             ['heatmap-density'],
-            0, 'rgba(0, 0, 255, 0)',
-            0.1, 'rgb(16, 185, 129)', // Good - Green
-            0.3, 'rgb(251, 191, 36)', // Moderate - Yellow
-            0.5, 'rgb(249, 115, 22)', // Unhealthy SG - Orange
-            0.7, 'rgb(239, 68, 68)', // Unhealthy - Red
-            0.9, 'rgb(124, 58, 237)', // Very Unhealthy - Purple
-            1, 'rgb(153, 27, 27)' // Hazardous - Dark Red
+            0, 'rgba(16, 185, 129, 0)', // Transparent green
+            0.1, 'rgba(16, 185, 129, 0.6)', // Good - Green
+            0.3, 'rgba(251, 191, 36, 0.7)', // Moderate - Yellow
+            0.5, 'rgba(249, 115, 22, 0.8)', // Unhealthy SG - Orange
+            0.7, 'rgba(239, 68, 68, 0.9)', // Unhealthy - Red
+            0.85, 'rgba(124, 58, 237, 1)', // Very Unhealthy - Purple
+            1, 'rgba(153, 27, 27, 1)' // Hazardous - Dark Red
           ],
-          // Adjust the heatmap radius by zoom level
+          // Larger radius for global coverage
           'heatmap-radius': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            0, 2,
-            15, 20
+            0, 8,
+            5, 15,
+            10, 25,
+            15, 40
           ],
-          // Transition from heatmap to circle layer by zoom level
+          // Opacity control
           'heatmap-opacity': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            7, 1,
-            15, 0
+            0, 0.8,
+            5, 0.7,
+            10, 0.6,
+            15, 0.4
           ]
         }
       });
     }
 
-    // Add a circle layer for higher zoom levels
-    if (!map.current?.getLayer('heatmap-point')) {
+    // Add city points layer on top for reference
+    if (!map.current?.getLayer('city-reference-points')) {
+      const cityPoints = {
+        type: 'FeatureCollection' as const,
+        features: citiesData.map(city => {
+          const { coordinates, sampleData } = city;
+          const { lat, lon } = coordinates || {};
+          
+          if (!lat || !lon) return null;
+
+          const hasAirQualityData = sampleData && sampleData.length > 0 && sampleData[0]?.components;
+          const components = hasAirQualityData && sampleData[0]?.components || {};
+          const aqiData = calculateOverallAqi(components);
+          
+          return {
+            type: 'Feature' as const,
+            properties: {
+              aqi: aqiData.aqi,
+              name: city.name
+            },
+            geometry: {
+              type: 'Point' as const,
+              coordinates: [lon, lat]
+            }
+          };
+        }).filter(feature => feature !== null)
+      };
+
+      map.current?.addSource('city-reference-data', {
+        type: 'geojson',
+        data: cityPoints
+      });
+
       map.current?.addLayer({
-        id: 'heatmap-point',
+        id: 'city-reference-points',
         type: 'circle',
-        source: 'heatmap-data',
-        minzoom: 14,
+        source: 'city-reference-data',
+        minzoom: 6,
         paint: {
           'circle-radius': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            7, 1,
-            16, 8
+            6, 3,
+            10, 6,
+            15, 10
           ],
           'circle-color': [
             'interpolate',
@@ -258,14 +389,8 @@ const Home = () => {
             500, '#991B1B'
           ],
           'circle-stroke-color': 'white',
-          'circle-stroke-width': 1,
-          'circle-opacity': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            7, 0,
-            15, 1
-          ]
+          'circle-stroke-width': 2,
+          'circle-opacity': 0.9
         }
       });
     }
@@ -274,6 +399,21 @@ const Home = () => {
   const removeHeatmapLayer = () => {
     if (!map.current) return;
     
+    // Remove global heatmap layers
+    if (map.current.getLayer('global-heatmap-layer')) {
+      map.current.removeLayer('global-heatmap-layer');
+    }
+    if (map.current.getLayer('city-reference-points')) {
+      map.current.removeLayer('city-reference-points');
+    }
+    if (map.current.getSource('global-heatmap-data')) {
+      map.current.removeSource('global-heatmap-data');
+    }
+    if (map.current.getSource('city-reference-data')) {
+      map.current.removeSource('city-reference-data');
+    }
+    
+    // Remove old heatmap layers if they exist
     if (map.current.getLayer('heatmap-layer')) {
       map.current.removeLayer('heatmap-layer');
     }
