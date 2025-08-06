@@ -117,7 +117,7 @@ const Home = () => {
     if (map.current && mapLoaded && citiesData.length > 0) {
       addMarkers();
     }
-  }, [citiesData, mapLoaded]);
+  }, [citiesData, mapLoaded, showHeatmap]);
 
   // Search functionality
   useEffect(() => {
@@ -135,6 +135,157 @@ const Home = () => {
     setShowSearchResults(filtered.length > 0);
   }, [searchQuery, citiesData]);
 
+  const [showHeatmap, setShowHeatmap] = useState(false);
+
+  const addHeatmapLayer = () => {
+    if (!map.current || !mapLoaded || !citiesData.length) return;
+
+    // Prepare GeoJSON data with AQI values
+    const heatmapData = {
+      type: 'FeatureCollection' as const,
+      features: citiesData.map(city => {
+        const { coordinates, sampleData } = city;
+        const { lat, lon } = coordinates || {};
+        
+        if (!lat || !lon) return null;
+
+        const hasAirQualityData = sampleData && sampleData.length > 0 && sampleData[0]?.components;
+        const components = hasAirQualityData && sampleData[0]?.components || {};
+        const aqiData = calculateOverallAqi(components);
+        
+        return {
+          type: 'Feature' as const,
+          properties: {
+            aqi: aqiData.aqi
+          },
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [lon, lat]
+          }
+        };
+      }).filter(feature => feature !== null)
+    };
+
+    // Add source if it doesn't exist
+    if (!map.current?.getSource('heatmap-data')) {
+      map.current?.addSource('heatmap-data', {
+        type: 'geojson',
+        data: heatmapData
+      });
+    }
+
+    // Add heatmap layer if it doesn't exist
+    if (!map.current?.getLayer('heatmap-layer')) {
+      map.current?.addLayer({
+        id: 'heatmap-layer',
+        type: 'heatmap',
+        source: 'heatmap-data',
+        maxzoom: 15,
+        paint: {
+          // Increase the heatmap weight based on AQI value
+          'heatmap-weight': [
+            'interpolate',
+            ['linear'],
+            ['get', 'aqi'],
+            0, 0,
+            300, 1
+          ],
+          // Increase the heatmap color intensity based on zoom level
+          'heatmap-intensity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 1,
+            15, 3
+          ],
+          // Color ramp for heatmap based on AQI values
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0, 'rgba(0, 0, 255, 0)',
+            0.1, 'rgb(16, 185, 129)', // Good - Green
+            0.3, 'rgb(251, 191, 36)', // Moderate - Yellow
+            0.5, 'rgb(249, 115, 22)', // Unhealthy SG - Orange
+            0.7, 'rgb(239, 68, 68)', // Unhealthy - Red
+            0.9, 'rgb(124, 58, 237)', // Very Unhealthy - Purple
+            1, 'rgb(153, 27, 27)' // Hazardous - Dark Red
+          ],
+          // Adjust the heatmap radius by zoom level
+          'heatmap-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 2,
+            15, 20
+          ],
+          // Transition from heatmap to circle layer by zoom level
+          'heatmap-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            7, 1,
+            15, 0
+          ]
+        }
+      });
+    }
+
+    // Add a circle layer for higher zoom levels
+    if (!map.current?.getLayer('heatmap-point')) {
+      map.current?.addLayer({
+        id: 'heatmap-point',
+        type: 'circle',
+        source: 'heatmap-data',
+        minzoom: 14,
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            7, 1,
+            16, 8
+          ],
+          'circle-color': [
+            'interpolate',
+            ['linear'],
+            ['get', 'aqi'],
+            0, '#10B981',
+            50, '#10B981',
+            100, '#FBBF24',
+            150, '#F97316',
+            200, '#EF4444',
+            300, '#7C3AED',
+            500, '#991B1B'
+          ],
+          'circle-stroke-color': 'white',
+          'circle-stroke-width': 1,
+          'circle-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            7, 0,
+            15, 1
+          ]
+        }
+      });
+    }
+  };
+
+  const removeHeatmapLayer = () => {
+    if (!map.current) return;
+    
+    if (map.current.getLayer('heatmap-layer')) {
+      map.current.removeLayer('heatmap-layer');
+    }
+    if (map.current.getLayer('heatmap-point')) {
+      map.current.removeLayer('heatmap-point');
+    }
+    if (map.current.getSource('heatmap-data')) {
+      map.current.removeSource('heatmap-data');
+    }
+  };
+
   const addMarkers = () => {
     if (!map.current || !mapLoaded || error || !citiesData.length) return;
 
@@ -143,6 +294,14 @@ const Home = () => {
     popups.current.forEach(popup => popup.remove());
     markers.current = [];
     popups.current = [];
+
+    // If heatmap is enabled, add heatmap instead of markers
+    if (showHeatmap) {
+      addHeatmapLayer();
+      return;
+    } else {
+      removeHeatmapLayer();
+    }
 
     citiesData.forEach(city => {
       const { name, coordinates, sampleData } = city;
@@ -190,7 +349,7 @@ const Home = () => {
         offset: [0, -40],
         className: 'hover-popup'
       }).setHTML(`
-        <div class="bg-gray-800 text-white p-4 shadow-lg border-0" style="min-width: 280px;">
+        <div class="bg-gray-800 text-white p-4 shadow-lg border-0" style="min-width: 300px;">
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-semibold text-sm">${name}</h3>
             <button class="text-yellow-400 hover:text-yellow-300">
@@ -344,8 +503,23 @@ const Home = () => {
           </div>
         )}
 
-        {/* Top Right Search */}
-        <div className="absolute top-4 right-4 z-20">
+        {/* Top Right Controls */}
+        <div className="absolute top-4 right-4 z-20 space-y-3">
+          {/* Heatmap Toggle */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowHeatmap(!showHeatmap)}
+              className={`px-4 py-2 text-sm font-medium rounded-md shadow-lg transition-colors ${
+                showHeatmap 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-gray-800 text-gray-300 border border-gray-600 hover:bg-gray-700'
+              }`}
+            >
+              {showHeatmap ? '🗺️ Show Points' : '🔥 Show Heatmap'}
+            </button>
+          </div>
+          
+          {/* Search */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
