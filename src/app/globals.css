@@ -1,52 +1,129 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Oi&family=Oswald:wght@200..700&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Teko:wght@300..700&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap'); 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: 'DM Sans', Arial, sans-serif;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    font-family: 'DM Sans', Arial, sans-serif;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
 body {
-  font-family: 'DM Sans', Arial, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'DM Sans', Arial, sans-serif;
-}
-p{
-  font-family: 'Rubik', Arial, sans-serif;
-}
-
-@media (max-width: 768px) {
-  body {
-    padding: 5 10px; 
-    margin: 5px auto; 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
-@layer components {
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease-in-out;
-  }
-  
-  .animate-scaleIn {
-    animation: scaleIn 0.3s ease-out;
-  }
+/* Remove all border radius for sharp edges */
+* {
+  border-radius: 0 !important;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Custom styles for mapbox popups */
+.mapboxgl-popup {
+  pointer-events: none;
 }
 
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+.mapboxgl-popup-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  pointer-events: none;
+}
+
+.mapboxgl-popup-tip {
+  display: none !important;
+}
+
+.hover-popup .mapboxgl-popup-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Custom marker styles */
+.marker {
+  transition: all 0.2s ease;
+  border-radius: 0 !important;
+}
+
+.marker:hover {
+  transform: scale(1.1);
+  z-index: 1000;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Remove default mapbox attribution styling */
+.mapboxgl-ctrl-attrib {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+  color: #d1d5db !important;
+}
+
+.mapboxgl-ctrl-attrib a {
+  color: #60a5fa !important;
+}
+
+/* Navigation control styling */
+.mapboxgl-ctrl-group {
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 0 !important;
+}
+
+.mapboxgl-ctrl-group button {
+  background-color: #374151 !important;
+  color: #d1d5db !important;
+  border-radius: 0 !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: #4b5563 !important;
+}
+
+/* Input and button sharp edges */
+input, button, select, textarea {
+  border-radius: 0 !important;
+}
+
+/* Custom focus styles */
+input:focus, button:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #3b82f6 !important;
 }

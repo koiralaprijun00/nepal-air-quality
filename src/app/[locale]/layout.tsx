@@ -1,14 +1,13 @@
-import { notFound } from 'next/navigation';
-import Navigation from './components/Navigation';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
-import { Metadata, Viewport } from 'next';
-import { getTranslations } from 'next-intl/server';
-import '../globals.css';
 
-// Specify default locale and supported locales
+import React from 'react';
+import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getTranslations } from 'next-intl/server';
+import { Metadata, Viewport } from 'next';
+import '../globals.css';
+import Navigation from './components/Navigation';
+
 const locales = ['en', 'np'];
-const defaultLocale = 'en';
 
 type Props = {
   children: React.ReactNode;
@@ -37,7 +36,7 @@ export const generateViewport = (): Viewport => {
   return {
     width: 'device-width',
     initialScale: 1.0,
-    themeColor: '#ffffff',
+    themeColor: '#1f2937',
   };
 };
 
@@ -56,7 +55,7 @@ export default async function RootLayout({
 
   return (
     <NextIntlClientProvider locale={resolvedParams.locale} messages={messages}>
-      <div className="antialiased bg-gray-50 min-h-screen">
+      <div className="antialiased bg-gray-900 text-white min-h-screen">
         <Navigation />
         {children}
       </div>

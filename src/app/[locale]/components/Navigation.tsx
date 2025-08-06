@@ -1,4 +1,4 @@
-// src/app/components/Navigation.tsx
+
 'use client'
 
 import React, { useState } from 'react';
@@ -15,7 +15,7 @@ const Navigation = () => {
   const t = useTranslations('navigation');
 
   return (
-    <nav className="bg-gray-100 shadow-md">
+    <nav className="bg-gray-800 border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -25,19 +25,13 @@ const Navigation = () => {
                 alt="Nepali Hawa" 
                 width={150} 
                 height={40}
-                className="h-10 w-auto transition-transform duration-300 hover:scale-105"
+                className="h-10 w-auto transition-transform duration-300 hover:scale-105 filter brightness-0 invert"
               />
             </Link>
           </div>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <NavLink href={`/${locale}`} isActive={pathname === `/${locale}`}>
-              {t('home')}
-            </NavLink>
-            <NavLink href={`/${locale}/blog`} isActive={pathname === `/${locale}/blog`}>
-              {t('about')}
-            </NavLink>
             <NavLink href={`/${locale}/privacy-policy`} isActive={pathname === `/${locale}/privacy-policy`}>
               Privacy Policy
             </NavLink>
@@ -49,7 +43,7 @@ const Navigation = () => {
             <LanguageSwitcher />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 focus:outline-none"
+              className="p-2 text-gray-300 hover:text-white focus:outline-none"
             >
               <svg 
                 className="h-6 w-6" 
@@ -82,13 +76,7 @@ const Navigation = () => {
       {/* Mobile Navigation Menu */}
       {isMenuOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
-            <MobileNavLink href={`/${locale}`} isActive={pathname === `/${locale}`}>
-              Dashboard
-            </MobileNavLink>
-            <MobileNavLink href={`/${locale}/blog`} isActive={pathname === `/${locale}/blog`}>
-              Learn About AQI
-            </MobileNavLink>
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-700">
             <MobileNavLink href={`/${locale}/privacy-policy`} isActive={pathname === `/${locale}/privacy-policy`}>
               Privacy Policy
             </MobileNavLink>
@@ -109,10 +97,10 @@ const NavLink: React.FC<NavLinkProps> = ({ href, isActive, children }) => {
   return (
     <Link 
       href={href}
-      className={`px-1 py-2 text-base font-medium border-b-2 ${
+      className={`px-1 py-2 text-base font-medium border-b-2 transition-colors ${
         isActive 
-          ? 'border-blue-500 text-blue-600' 
-          : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+          ? 'border-blue-500 text-blue-400' 
+          : 'border-transparent text-gray-300 hover:text-white hover:border-gray-500'
       }`}
     >
       {children}
@@ -124,10 +112,10 @@ const MobileNavLink: React.FC<NavLinkProps> = ({ href, isActive, children }) => 
   return (
     <Link 
       href={href}
-      className={`block px-3 py-2 rounded-md text-base font-medium ${
+      className={`block px-3 py-2 text-base font-medium transition-colors ${
         isActive 
-          ? 'bg-blue-50 text-blue-600' 
-          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+          ? 'bg-gray-700 text-blue-400' 
+          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
       }`}
     >
       {children}
