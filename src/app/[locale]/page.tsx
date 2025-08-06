@@ -53,6 +53,7 @@ const Home = () => {
   const [mapError, setMapError] = useState<string | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const popups = useRef<mapboxgl.Popup[]>([]);
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   const t = useTranslations('common');
 
@@ -134,8 +135,6 @@ const Home = () => {
     setSearchResults(filtered);
     setShowSearchResults(filtered.length > 0);
   }, [searchQuery, citiesData]);
-
-  const [showHeatmap, setShowHeatmap] = useState(false);
 
   const addHeatmapLayer = () => {
     if (!map.current || !mapLoaded || !citiesData.length) return;
