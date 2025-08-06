@@ -1,68 +1,37 @@
-import "./globals.css"
-import 'mapbox-gl/dist/mapbox-gl.css';
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import React from 'react';
+import { Metadata, Viewport } from 'next';
+import './globals.css';
+import Navigation from './components/Navigation';
 
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'Nepal Air Quality - Real-time Air Pollution Monitoring',
-  description: 'Track real-time air quality index (AQI) and pollution levels across Nepal. Get detailed air quality data for Kathmandu, Pokhara, and other major cities.',
-  keywords: 'nepal air quality, air pollution nepal, aqi nepal, kathmandu air quality, pokhara air quality, nepal pollution, air quality index',
-  authors: [{ name: 'Nepal Air Quality Team' }],
-  creator: 'Nepal Air Quality Team',
-  publisher: 'Nepal Air Quality Team',
-  openGraph: {
-    title: 'Nepal Air Quality - Real-time Air Pollution Monitoring',
-    description: 'Track real-time air quality index (AQI) and pollution levels across Nepal. Get detailed air quality data for Kathmandu, Pokhara, and other major cities.',
-    url: 'https://nepal-air-quality.vercel.app',
-    siteName: 'Nepal Air Quality',
-    images: [
-      {
-        url: 'https://nepal-air-quality.vercel.app/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Nepal Air Quality Dashboard',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Nepal Air Quality - Real-time Air Pollution Monitoring',
-    description: 'Track real-time air quality index (AQI) and pollution levels across Nepal.',
-    images: ['https://nepal-air-quality.vercel.app/og-image.jpg'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: {
+      template: '%s | Nepal Air Quality',
+      default: 'Nepal Air Quality',
     },
-  },
-  verification: {
-    google: 'your-google-site-verification-code',
-  },
-  alternates: {
-    canonical: 'https://nepal-air-quality.vercel.app',
-  },
+    description: 'Real-time air quality monitoring for Nepal',
+  };
 }
 
+export const generateViewport = (): Viewport => {
+  return {
+    width: 'device-width',
+    initialScale: 1.0,
+    themeColor: '#1f2937',
+  };
+};
+
 export default function RootLayout({
-  children
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en">
+      <body className="antialiased bg-gray-900 text-white min-h-screen">
+        <Navigation />
         {children}
       </body>
     </html>
-  )
+  );
 }

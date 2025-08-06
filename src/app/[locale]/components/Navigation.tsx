@@ -5,21 +5,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import LanguageSwitcher from './LanguageSwitcher';
-import { useTranslations } from 'next-intl';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const locale = pathname.split('/')[1] || 'en';
-  const t = useTranslations('navigation');
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href={`/${locale}`} className="flex items-center">
+            <Link href="/" className="flex items-center">
               <Image 
                 src="/nepali-hawa.png" 
                 alt="Nepali Hawa" 
@@ -32,15 +28,13 @@ const Navigation = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <NavLink href={`/${locale}/privacy-policy`} isActive={pathname === `/${locale}/privacy-policy`}>
+            <NavLink href="/privacy-policy" isActive={pathname === '/privacy-policy'}>
               Privacy Policy
             </NavLink>
-            <LanguageSwitcher />
           </div>
           
           {/* Mobile Navigation Button */}
-          <div className="md:hidden flex items-center space-x-4">
-            <LanguageSwitcher />
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 text-gray-300 hover:text-white focus:outline-none"
@@ -77,7 +71,7 @@ const Navigation = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-700">
-            <MobileNavLink href={`/${locale}/privacy-policy`} isActive={pathname === `/${locale}/privacy-policy`}>
+            <MobileNavLink href="/privacy-policy" isActive={pathname === '/privacy-policy'}>
               Privacy Policy
             </MobileNavLink>
           </div>

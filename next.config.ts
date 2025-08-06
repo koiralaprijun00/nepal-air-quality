@@ -1,8 +1,5 @@
-import createNextIntlPlugin from 'next-intl/plugin';
 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-
-/** @type {import('next').NextConfig} */ // Optional: Improves type checking
+/** @type {import('next').NextConfig} */
 interface WebpackConfig {
     resolve: {
         fallback: {
@@ -24,4 +21,4 @@ const nextConfig: NextConfig = {
     },
 };
 
-export default withNextIntl(nextConfig);
+export default nextConfig;
